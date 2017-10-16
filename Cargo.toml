@@ -1,0 +1,13 @@
+[package]
+name = "fie"
+version = "0.1.0"
+authors = ["Douman <douman@gmx.se>"]
+repository = "https://github.com/DoumanAsh/fie"
+description = "Small and cute twitter app."
+keywords = ["twitter"]
+license = "Apache-2.0"
+readme = "README.md"
+
+[dependencies]
+clap = "2"
+egg-mode = "0.*"
