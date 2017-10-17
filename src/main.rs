@@ -1,10 +1,16 @@
 extern crate egg_mode;
+extern crate tokio_core;
+extern crate futures;
 extern crate clap;
+
+use tokio_core::reactor::Core;
 
 use std::env;
 
 mod api;
 mod cli;
+#[macro_use]
+mod utils;
 
 fn run() -> Result<i32, String> {
     let args = cli::Args::new()?;
@@ -23,14 +29,13 @@ fn run() -> Result<i32, String> {
         None => return Err("Access token secret is missing. Access token format: <key> <secrect>".to_string())
     };
 
-    let token = api::twitter::create_token(access_key, access_secret);
+    let mut tokio_core = Core::new().map_err(error_formatter!("Unable to create tokios' event loop."))?;
+    let twitter = api::twitter::Client::new(tokio_core.handle(), access_key, access_secret);
 
     match args.command {
         cli::Commands::Post(message, tags) => {
-            match api::twitter::post_tweet(message, tags, &token) {
-                Ok(tweet) => println!("Posted tweet:\n{}", tweet.text),
-                Err(error) => return Err(format!("Failed to post tweet. Error: {}", error))
-            }
+            let rsp = tokio_core.run(twitter.post(message, tags)).map_err(error_formatter!("Cannot post error"))?;
+            println!("Posted tweet(id={}):\n{}\n", rsp.response.id, rsp.response.text);
         },
     }
 

@@ -10,4 +10,7 @@ readme = "README.md"
 
 [dependencies]
 clap = "2"
+
 egg-mode = "0.*"
+tokio-core = "0.*"
+futures = "0.*"
