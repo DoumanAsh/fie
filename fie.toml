@@ -1,0 +1,14 @@
+# HTTP Authorization Bearer token
+# Can be found through browser inspector when you're logged into gab.ai
+[gab]
+token = "fill your token"
+
+# Consumer Token of twitter app
+[twitter.consumer]
+key = "key"
+secret = "secret"
+
+# Authorization Token to access user account. Generated in developer page.
+[twitter.access]
+key = "key"
+secret = "secret"

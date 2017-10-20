@@ -3,6 +3,7 @@ use ::egg_mode::{
     Token,
     KeyPair,
     FutureResponse,
+    Response,
     tweet,
 };
 
@@ -10,8 +11,8 @@ use ::tokio_core::reactor::{
     Handle
 };
 
-pub const ACCESS_TOKEN_ENV: &'static str = "TWITTER_ACCESS_TOKEN";
-const CONSUMER_TOKEN: &'static str = include_str!("../../tw_consumer.token");
+use super::common;
+use ::config;
 
 ///Twitter client.
 pub struct Client {
@@ -23,14 +24,10 @@ pub struct Client {
 
 impl Client {
     ///Creates new instances and initializes token.
-    pub fn new(handle: Handle, access_key: &str, access_secret: &str) -> Self {
-        let mut consumer_split = CONSUMER_TOKEN.split_whitespace();
-        let consumer_key = consumer_split.next().expect("Consumer key is missing from tw_consumer.token file!");
-        let consumer_secret = consumer_split.next().expect("Consumer secret is missing from tw_consumer.token file!");
-
+    pub fn new(handle: Handle, config: config::Twitter) -> Self {
         let token = Token::Access {
-            consumer: KeyPair::new(consumer_key, consumer_secret),
-            access: KeyPair::new(access_key.to_string(), access_secret.to_string())
+            consumer: KeyPair::new(config.consumer.key, config.consumer.secret),
+            access: KeyPair::new(config.access.key, config.access.secret)
         };
 
         Client {
@@ -40,12 +37,13 @@ impl Client {
     }
 
     ///Posts new tweet.
-    pub fn post(&self, message: String, tags: Option<Vec<String>>) -> FutureResponse<tweet::Tweet> {
-        let message = match tags {
-            Some(tags) => format!("{}\n{}", message, tags.join(" ")),
-            None => message
-        };
+    pub fn post(&self, message: &str, tags: &Option<Vec<String>>) -> FutureResponse<tweet::Tweet> {
+        let message = common::message(message, tags);
 
         tweet::DraftTweet::new(&message).send(&self.token, &self.handle)
+    }
+
+    pub fn handle_post(response: Response<tweet::Tweet>) -> Result<(), String> {
+        Ok(println!("Posted tweet(id={}):\n{}\n", response.response.id, response.response.text))
     }
 }
