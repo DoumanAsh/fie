@@ -44,6 +44,6 @@ impl Client {
     }
 
     pub fn handle_post(response: Response<tweet::Tweet>) -> Result<(), String> {
-        Ok(println!("Posted tweet(id={}):\n{}\n", response.response.id, response.response.text))
+        Ok(println!("OK(id={})", response.response.id))
     }
 }

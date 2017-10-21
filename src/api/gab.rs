@@ -89,7 +89,7 @@ impl Client {
             return Err(format!("Failed to post. Status: {}", response.status()));
         }
 
-        println!("Posted gab");
+        println!("OK");
         Ok(())
     }
 }

@@ -42,7 +42,9 @@ fn run() -> Result<i32, String> {
 
     match args.command {
         cli::Commands::Post(message, tags) => {
+            println!(">>>Gab:");
             tokio_core.run(gab.post(&message, &tags).map_err(error_formatter!("Cannot post.")).and_then(api::gab::Client::handle_post))?;
+            println!(">>>Twitter:");
             tokio_core.run(twitter.post(&message, &tags).map_err(error_formatter!("Cannot tweet.")).and_then(api::twitter::Client::handle_post))?
         },
     }
