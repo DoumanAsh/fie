@@ -36,6 +36,8 @@ fn new_command() -> App<'static, 'static> {
                                                 .takes_value(true)
                                                 .number_of_values(1)
                                                 .multiple(true))
+                                 .arg(arg("image").short("i")
+                                                  .takes_value(true))
 }
 
 pub fn parser() -> App<'static, 'static> {
@@ -49,10 +51,16 @@ pub fn parser() -> App<'static, 'static> {
 }
 
 #[derive(Debug)]
-///Command representation with all its arguments
+///Command representation with all its arguments.
 pub enum Commands {
-    ///Creates new tweet
-    Post(String, Option<Vec<String>>)
+    ///Creates new tweet.
+    ///
+    ///# Parameters:
+    ///
+    ///* First - Text.
+    ///* Second - Tags.
+    ///* Third - Image to attach.
+    Post(String, Option<Vec<String>>, Option<String>)
 }
 
 impl Commands {
@@ -63,12 +71,10 @@ impl Commands {
         match name {
             "post" => {
                 let message = matches.value_of("message").unwrap().to_string();
-                if let Some(tags) = matches.values_of("tag") {
-                    Commands::Post(message, Some(tags.map(|tag| format!("#{}", tag)).collect()))
-                }
-                else {
-                    Commands::Post(message, None)
-                }
+                let tags = matches.values_of("tag").map(|values| values.map(|tag| format!("#{}", tag)).collect());
+                let image = matches.value_of("image").map(|image| image.to_string());
+
+                Commands::Post(message, tags, image)
             },
             _ => unimplemented!()
         }

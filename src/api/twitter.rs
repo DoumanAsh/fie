@@ -5,6 +5,7 @@ use ::egg_mode::{
     FutureResponse,
     Response,
     tweet,
+    media
 };
 
 use ::tokio_core::reactor::{
@@ -13,6 +14,8 @@ use ::tokio_core::reactor::{
 
 use super::common;
 use ::config;
+
+use ::utils::Image;
 
 ///Twitter client.
 pub struct Client {
@@ -36,11 +39,23 @@ impl Client {
         }
     }
 
+    ///Uploads image to twitter.
+    pub fn upload_image(&self, image: &Image) -> FutureResponse<media::Media> {
+        media::upload_image(&image.content, &self.token, &self.handle)
+    }
+
     ///Posts new tweet.
     pub fn post(&self, message: &str, tags: &Option<Vec<String>>) -> FutureResponse<tweet::Tweet> {
         let message = common::message(message, tags);
 
         tweet::DraftTweet::new(&message).send(&self.token, &self.handle)
+    }
+
+    ///Posts new tweet with images.
+    pub fn post_w_images(&self, message: &str, tags: &Option<Vec<String>>, images: &[u64]) -> FutureResponse<tweet::Tweet> {
+        let message = common::message(message, tags);
+
+        tweet::DraftTweet::new(&message).media_ids(images).send(&self.token, &self.handle)
     }
 
     pub fn handle_post(response: Response<tweet::Tweet>) -> Result<(), String> {
