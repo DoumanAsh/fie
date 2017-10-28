@@ -47,6 +47,8 @@ pub fn parser() -> App<'static, 'static> {
                   .setting(AppSettings::ArgRequiredElseHelp)
                   .setting(AppSettings::VersionlessSubcommands)
                   .subcommand(new_command())
+                  .arg(flag("gab").help("Use gab.ai. By default all social medias are used unless flag is specified."))
+                  .arg(flag("twitter").help("Use Twitter. By default all social medias are used unless flag is specified."))
 
 }
 
@@ -82,18 +84,46 @@ impl Commands {
 }
 
 #[derive(Debug)]
+pub struct Flags {
+    ///Whether to use gab.ai
+    pub gab: bool,
+    ///Whether to use Twitter
+    pub twitter: bool
+}
+
+impl Flags {
+    fn from_matches(matches: &ArgMatches<'static>) -> Self {
+        let mut gab = matches.is_present("gab");
+        let mut twitter = matches.is_present("twitter");
+
+        if !gab && !twitter {
+            gab = true;
+            twitter = true;
+        }
+
+        Flags {
+            gab,
+            twitter
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct Args {
     ///Command to execute
-    pub command: Commands
+    pub command: Commands,
+    pub flags: Flags
 }
 
 impl Args {
     pub fn new() -> Result<Self, String> {
         let matches = parser().get_matches();
         let command = Commands::from_matches(matches.subcommand());
+        let flags = Flags::from_matches(&matches);
 
         Ok(Args {
-            command
+            command,
+            flags
         })
     }
 }
