@@ -11,7 +11,7 @@ use self::io::{
     BufReader,
     Read
 };
-
+use ::futures::future;
 use ::mime_guess::{
     Mime,
     guess_mime_type
@@ -63,4 +63,8 @@ pub fn get_config() -> PathBuf {
     result.set_file_name(config::NAME);
 
     result
+}
+
+pub fn empty_future_job() -> future::FutureResult<(), ()> {
+    future::ok(())
 }

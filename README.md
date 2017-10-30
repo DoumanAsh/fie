@@ -21,16 +21,18 @@ Use [example](fie.toml) as reference.
 ## Usage
 
 ```
-fie 0.1.0
+fie 0.2.0
 Douman <douman@gmx.se>
 
 Small and cute twitter app.
 
 USAGE:
-    fie.exe [SUBCOMMAND]
+    fie.exe [FLAGS] [SUBCOMMAND]
 
 FLAGS:
+        --gab        Use gab.ai. By default all social medias are used unless flag is specified.
     -h, --help       Prints help information
+        --twitter    Use Twitter. By default all social medias are used unless flag is specified.
     -V, --version    Prints version information
 
 SUBCOMMANDS:

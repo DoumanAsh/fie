@@ -1,6 +1,6 @@
 [package]
 name = "fie"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute twitter app."

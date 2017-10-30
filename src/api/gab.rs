@@ -4,7 +4,7 @@ mod hyper {
     pub use ::hyper::client::{HttpConnector, FutureResponse};
     pub use ::hyper_tls::{HttpsConnector};
 }
-
+use ::futures::future;
 use ::hyper::mime;
 
 use ::serde_json;
@@ -14,7 +14,10 @@ use ::tokio_core::reactor::{
 
 use super::common;
 use ::config;
-use ::utils::Image;
+use ::utils::{
+    empty_future_job,
+    Image
+};
 
 const POST_URL: &'static str = "https://gab.ai/posts";
 const IMAGES_URL: &'static str = "https://gab.ai/api/media-attachments/images";
@@ -137,12 +140,20 @@ impl Client {
         self.hyper.request(req)
     }
 
-    pub fn handle_post(response: hyper::Response) -> Result<(), String> {
-        if response.status() != hyper::StatusCode::Ok {
-            return Err(format!("Failed to post. Status: {}", response.status()));
+    pub fn handle_post(result: Result<hyper::Response, String>) -> future::FutureResult<(), ()> {
+        println!(">>>Gab:");
+        match result {
+            Ok(response) => {
+                if response.status() != hyper::StatusCode::Ok {
+                    println!("Failed to post. Status: {}", response.status());
+                }
+                else {
+                    println!("OK");
+                }
+            }
+            Err(error) => println!("{}", error)
         }
 
-        println!("OK");
-        Ok(())
+        empty_future_job()
     }
 }

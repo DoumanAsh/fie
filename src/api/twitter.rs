@@ -7,7 +7,7 @@ use ::egg_mode::{
     tweet,
     media
 };
-
+use ::futures::future;
 use ::tokio_core::reactor::{
     Handle
 };
@@ -15,7 +15,10 @@ use ::tokio_core::reactor::{
 use super::common;
 use ::config;
 
-use ::utils::Image;
+use ::utils::{
+    empty_future_job,
+    Image
+};
 
 ///Twitter client.
 pub struct Client {
@@ -58,7 +61,13 @@ impl Client {
         tweet::DraftTweet::new(&message).media_ids(images).send(&self.token, &self.handle)
     }
 
-    pub fn handle_post(response: Response<tweet::Tweet>) -> Result<(), String> {
-        Ok(println!("OK(id={})", response.response.id))
+    pub fn handle_post(result: Result<Response<tweet::Tweet>, String>) -> future::FutureResult<(), ()> {
+        println!(">>>Twitter:");
+        match result {
+            Ok(rsp) => println!("OK(id={})", rsp.response.id),
+            Err(error) => println!("{}", error)
+        }
+
+        empty_future_job()
     }
 }
