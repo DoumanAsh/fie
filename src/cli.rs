@@ -35,9 +35,12 @@ fn new_command() -> App<'static, 'static> {
                                  .arg(arg("tag").short("t")
                                                 .takes_value(true)
                                                 .number_of_values(1)
-                                                .multiple(true))
+                                                .multiple(true)
+                                                .help("Adds hashtag at the last line of post."))
                                  .arg(arg("image").short("i")
-                                                  .takes_value(true))
+                                                  .multiple(true)
+                                                  .takes_value(true)
+                                                  .help("Adds image to post. Normally up to 4."))
 }
 
 pub fn parser() -> App<'static, 'static> {
@@ -62,7 +65,7 @@ pub enum Commands {
     ///* First - Text.
     ///* Second - Tags.
     ///* Third - Image to attach.
-    Post(String, Option<Vec<String>>, Option<String>)
+    Post(String, Option<Vec<String>>, Option<Vec<String>>)
 }
 
 impl Commands {
@@ -74,7 +77,7 @@ impl Commands {
             "post" => {
                 let message = matches.value_of("message").unwrap().to_string();
                 let tags = matches.values_of("tag").map(|values| values.map(|tag| format!("#{}", tag)).collect());
-                let image = matches.value_of("image").map(|image| image.to_string());
+                let image = matches.values_of("image").map(|images| images.map(|image| image.to_string()).collect());
 
                 Commands::Post(message, tags, image)
             },

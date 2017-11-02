@@ -49,21 +49,39 @@ fn run() -> Result<i32, String> {
 
             tokio_core.run(futures::future::join_all(jobs)).unwrap();
         },
-        cli::Commands::Post(message, tags, Some(image)) => {
+        cli::Commands::Post(message, tags, Some(images)) => {
             let mut jobs: Vec<Box<Future<Item=(), Error=()>>> = vec![];
-            let image = utils::open_image(image).map_err(error_formatter!("Cannot open image!"))?;
+            let images = {
+                let mut result = vec![];
+                for image in images {
+                    result.push(utils::open_image(image).map_err(error_formatter!("Cannot open image!"))?);
+                }
+                result
+            };
+
             if args.flags.gab {
-                let gab_post = gab.upload_image(&image).map_err(error_formatter!("Cannot upload image."))
-                                  .and_then(handle_bad_hyper_response!("Cannot upload image."))
-                                  .and_then(|response| response.body().concat2().map_err(error_formatter!("Cannot read image upload's response")))
-                                  .and_then(|body| serde_json::from_slice(&body).map_err(error_formatter!("Cannot parse image upload's response")))
-                                  .and_then(|response: api::gab::payload::UploadResponse| gab.post_w_images(&message, &tags, &[response.id]).map_err(error_formatter!("Cannot post.")))
-                                  .then(api::gab::Client::handle_post);
+                let mut gab_images: Vec<_> = vec![];
+                for image in images.iter() {
+                    gab_images.push(gab.upload_image(&image).map_err(error_formatter!("Cannot upload image."))
+                                       .and_then(handle_bad_hyper_response!("Cannot upload image."))
+                                       .and_then(|response| response.body().concat2().map_err(error_formatter!("Cannot read image upload's response")))
+                                       .and_then(|body| serde_json::from_slice(&body).map_err(error_formatter!("Cannot parse image upload's response")))
+                                       .map(|response: api::gab::payload::UploadResponse| response.id));
+                }
+
+                let gab_post = futures::future::join_all(gab_images).and_then(|images| gab.post_w_images(&message, &tags, &images).map_err(error_formatter!("Cannot post.")))
+                                                                    .then(api::gab::Client::handle_post);
                 jobs.push(Box::new(gab_post))
             }
             if args.flags.twitter {
-                let tweet = twitter.upload_image(&image).map_err(error_formatter!("Cannot upload image."))
-                                   .and_then(|rsp| twitter.post_w_images(&message, &tags, &[rsp.response.id]).map_err(error_formatter!("Cannot tweet.")))
+                let mut tweet_images: Vec<_> = vec![];
+                for image in images.iter() {
+                    tweet_images.push(twitter.upload_image(&image).map_err(error_formatter!("Cannot upload image."))
+                                             .map(|rsp| rsp.response.id));
+                }
+
+                let tweet = futures::future::join_all(tweet_images)
+                                   .and_then(|images| twitter.post_w_images(&message, &tags, &images).map_err(error_formatter!("Cannot tweet.")))
                                    .then(api::twitter::Client::handle_post);
                 jobs.push(Box::new(tweet))
             }
