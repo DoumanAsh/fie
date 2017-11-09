@@ -39,3 +39,27 @@ SUBCOMMANDS:
     help    Prints this message or the help of the given subcommand(s)
     post    Creates new tweet
 ```
+
+### post
+
+Uses to post content on social platforms.
+Using `-t` you can specify hashtags which will be appended as last line of content.
+
+```
+Creates new tweet
+
+USAGE:
+    fie.exe post [OPTIONS] <message>
+
+FLAGS:
+    -h, --help    Prints help information
+
+OPTIONS:
+    -i <image>...        Adds image to post. Normally up to 4.
+    -t <tag>...          Adds hashtag at the last line of post.
+
+ARGS:
+    <message>    Message content
+```
+
+
