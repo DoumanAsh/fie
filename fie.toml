@@ -12,3 +12,8 @@ secret = "secret"
 [twitter.access]
 key = "key"
 secret = "secret"
+
+# Login and password from Minds.com
+[minds]
+username = "username"
+password = "password"

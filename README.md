@@ -9,7 +9,8 @@ Small and cute social media CLI.
 
 ## Supported platforms:
 
-* Gab (through unofficial API so may break)
+* Gab (through unofficial API so may break);
+* Minds.com (through kinda official API);
 * Twitter
 
 ## Configuration

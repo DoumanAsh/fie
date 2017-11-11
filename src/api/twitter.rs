@@ -12,7 +12,6 @@ use ::tokio_core::reactor::{
     Handle
 };
 
-use super::common;
 use ::config;
 
 use ::utils::{
@@ -48,17 +47,13 @@ impl Client {
     }
 
     ///Posts new tweet.
-    pub fn post(&self, message: &str, tags: &Option<Vec<String>>) -> FutureResponse<tweet::Tweet> {
-        let message = common::message(message, tags);
-
-        tweet::DraftTweet::new(&message).send(&self.token, &self.handle)
+    pub fn post(&self, message: &str) -> FutureResponse<tweet::Tweet> {
+        tweet::DraftTweet::new(message).send(&self.token, &self.handle)
     }
 
     ///Posts new tweet with images.
-    pub fn post_w_images(&self, message: &str, tags: &Option<Vec<String>>, images: &[u64]) -> FutureResponse<tweet::Tweet> {
-        let message = common::message(message, tags);
-
-        tweet::DraftTweet::new(&message).media_ids(images).send(&self.token, &self.handle)
+    pub fn post_w_images(&self, message: &str, images: &[u64]) -> FutureResponse<tweet::Tweet> {
+        tweet::DraftTweet::new(message).media_ids(images).send(&self.token, &self.handle)
     }
 
     pub fn handle_post(result: Result<Response<tweet::Tweet>, String>) -> future::FutureResult<(), ()> {

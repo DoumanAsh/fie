@@ -1,11 +1,6 @@
 use ::futures::future;
-
 use ::serde_json;
-use ::tokio_core::reactor::{
-    Handle
-};
 
-use super::common;
 use super::http;
 use self::http::{
     MultipartBody,
@@ -22,8 +17,8 @@ const IMAGES_URL: &'static str = "https://gab.ai/api/media-attachments/images";
 
 pub mod payload {
     #[derive(Serialize, Debug)]
-    pub struct Post {
-        body: String,
+    pub struct Post<'a> {
+        body: &'a str,
         pub reply_to: String,
         pub is_quote: u8,
         pub gif: String,
@@ -35,8 +30,8 @@ pub mod payload {
         pub media_attachments: Vec<String>
     }
 
-    impl Post {
-        pub fn new(message: String) -> Self {
+    impl<'a> Post<'a> {
+        pub fn new(message: &'a str) -> Self {
             Post {
                 body: message,
                 reply_to: "".to_string(),
@@ -59,18 +54,14 @@ pub mod payload {
 }
 
 ///Gab.ai Client
-pub struct Client {
-    http: http::Client<http::HttpsConnector<http::HttpConnector>>,
+pub struct Client<'a> {
+    http: &'a http::HttpClient,
     config: config::Gab
 }
 
-impl Client {
+impl<'a> Client<'a> {
     ///Creates new instance of client and performs authorization.
-    pub fn new(handle: Handle, config: config::Gab) -> Self {
-        let http = http::Client::configure().keep_alive(true)
-                                              .connector(http::HttpsConnector::new(4, &handle).unwrap())
-                                              .build(&handle);
-
+    pub fn new(http: &'a http::HttpClient, config: config::Gab) -> Self {
         Client {
             http,
             config
@@ -93,8 +84,7 @@ impl Client {
     }
 
     ///Post new message.
-    pub fn post(&self, message: &str, tags: &Option<Vec<String>>) -> http::FutureResponse {
-        let message = common::message(message, tags);
+    pub fn post(&self, message: &str) -> http::FutureResponse {
         let message = payload::Post::new(message);
 
         let mut req = http::Request::new(http::Method::Post, POST_URL.parse().unwrap());
@@ -106,8 +96,7 @@ impl Client {
     }
 
     ///Posts new message with image
-    pub fn post_w_images(&self, message: &str, tags: &Option<Vec<String>>, images: &[String]) -> http::FutureResponse {
-        let message = common::message(message, tags);
+    pub fn post_w_images(&self, message: &str, images: &[String]) -> http::FutureResponse {
         let mut message = payload::Post::new(message);
         message.media_attachments.extend(images.iter().cloned());
 

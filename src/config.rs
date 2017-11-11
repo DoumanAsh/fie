@@ -34,11 +34,17 @@ pub struct Gab {
     ///You can get it after logging into gab.io and examining your HTTP requests.
     pub token: String
 }
+#[derive(Deserialize, Debug)]
+pub struct Minds {
+    pub username: String,
+    pub password: String
+}
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
     pub gab: Gab,
-    pub twitter: Twitter
+    pub twitter: Twitter,
+    pub minds: Minds
 }
 
 impl Config {

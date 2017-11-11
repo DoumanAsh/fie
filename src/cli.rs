@@ -52,6 +52,7 @@ pub fn parser() -> App<'static, 'static> {
                   .subcommand(new_command())
                   .arg(flag("gab").help("Use gab.ai. By default all social medias are used unless flag is specified."))
                   .arg(flag("twitter").help("Use Twitter. By default all social medias are used unless flag is specified."))
+                  .arg(flag("minds").help("Use Minds.com. By default all social medias are used unless flag is specified."))
 
 }
 
@@ -91,22 +92,27 @@ pub struct Flags {
     ///Whether to use gab.ai
     pub gab: bool,
     ///Whether to use Twitter
-    pub twitter: bool
+    pub twitter: bool,
+    ///Whether to use Minds
+    pub minds: bool,
 }
 
 impl Flags {
     fn from_matches(matches: &ArgMatches<'static>) -> Self {
         let mut gab = matches.is_present("gab");
         let mut twitter = matches.is_present("twitter");
+        let mut minds = matches.is_present("minds");
 
-        if !gab && !twitter {
+        if !gab && !twitter && !minds {
             gab = true;
             twitter = true;
+            minds = true
         }
 
         Flags {
             gab,
-            twitter
+            twitter,
+            minds
         }
     }
 }
