@@ -66,7 +66,7 @@ pub enum Commands {
     ///* First - Text.
     ///* Second - Tags.
     ///* Third - Image to attach.
-    Post(String, Option<Vec<String>>, Option<Vec<String>>)
+    Post(String, Option<Vec<String>>)
 }
 
 impl Commands {
@@ -76,11 +76,14 @@ impl Commands {
 
         match name {
             "post" => {
-                let message = matches.value_of("message").unwrap().to_string();
-                let tags = matches.values_of("tag").map(|values| values.map(|tag| format!("#{}", tag)).collect());
+                let message = matches.value_of("message").unwrap();
                 let image = matches.values_of("image").map(|images| images.map(|image| image.to_string()).collect());
+                let message = match matches.values_of("tag") {
+                    Some(tags) => format!("{}\n{}", message, tags.map(|value| format!("#{}", value)).collect::<Vec<String>>().join(" ")),
+                    None => message.to_string()
+                };
 
-                Commands::Post(message, tags, image)
+                Commands::Post(message, image)
             },
             _ => unimplemented!()
         }

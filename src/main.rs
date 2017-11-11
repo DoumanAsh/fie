@@ -43,13 +43,12 @@ fn run() -> Result<i32, String> {
     };
 
     match args.command {
-        cli::Commands::Post(message, tags, None) => {
+        cli::Commands::Post(message, None) => {
             //TODO: Find a better way to schedule futures.
             //Boxing requires allocations and dynamic dispatch after all.
             //But using Handle::spawn() has restrictions on lifetimes which needs to be worked out
             //somehow
             let mut jobs: Vec<Box<Future<Item=(), Error=()>>> = vec![];
-            let message = api::common::message(&message, &tags);
             if let Some(ref gab) = gab {
                 let gab_post = gab.post(&message).map_err(error_formatter!("Cannot post.")).then(api::gab::Client::handle_post);
                 jobs.push(Box::new(gab_post))
@@ -65,8 +64,7 @@ fn run() -> Result<i32, String> {
 
             tokio_core.run(futures::future::join_all(jobs)).unwrap();
         },
-        cli::Commands::Post(message, tags, Some(images)) => {
-            let message = api::common::message(&message, &tags);
+        cli::Commands::Post(message, Some(images)) => {
             let mut jobs: Vec<Box<Future<Item=(), Error=()>>> = vec![];
             let images = {
                 let mut result = vec![];
