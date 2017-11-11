@@ -21,9 +21,9 @@ const IMAGES_URL: &'static str = "https://www.minds.com/api/v1/media";
 pub mod payload {
     #[derive(Serialize, Debug)]
     pub struct Auth {
-        grant_type: String,
-        client_id: String,
-        client_secret: String,
+        grant_type: &'static str,
+        client_id: &'static str,
+        client_secret: &'static str,
         username: String,
         password: String,
     }
@@ -31,9 +31,9 @@ pub mod payload {
     impl Auth {
         pub fn new(username: String, password: String) -> Self {
             Auth {
-                grant_type: "password".to_owned(),
-                client_id: "".to_owned(),
-                client_secret: "".to_owned(),
+                grant_type: "password",
+                client_id: "",
+                client_secret: "",
                 username,
                 password
             }

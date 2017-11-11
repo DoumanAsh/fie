@@ -50,11 +50,11 @@ fn run() -> Result<i32, String> {
             //somehow
             let mut jobs: Vec<Box<Future<Item=(), Error=()>>> = vec![];
             if let Some(ref gab) = gab {
-                let gab_post = gab.post(&message).map_err(error_formatter!("Cannot post.")).then(api::gab::Client::handle_post);
+                let gab_post = gab.post(&message, &[]).map_err(error_formatter!("Cannot post.")).then(api::gab::Client::handle_post);
                 jobs.push(Box::new(gab_post))
             }
             if let Some(ref twitter) = twitter {
-                let tweet = twitter.post(&message).map_err(error_formatter!("Cannot tweet.")).then(api::twitter::Client::handle_post);
+                let tweet = twitter.post(&message, &[]).map_err(error_formatter!("Cannot tweet.")).then(api::twitter::Client::handle_post);
                 jobs.push(Box::new(tweet))
             }
             if let Some(ref minds) = minds {
@@ -85,7 +85,7 @@ fn run() -> Result<i32, String> {
                 }
 
                 let message = message.as_str();
-                let gab_post = futures::future::join_all(gab_images).and_then(move |images| gab.post_w_images(&message, &images).map_err(error_formatter!("Cannot post.")))
+                let gab_post = futures::future::join_all(gab_images).and_then(move |images| gab.post(&message, &images).map_err(error_formatter!("Cannot post.")))
                                                                     .then(api::gab::Client::handle_post);
                 jobs.push(Box::new(gab_post))
             }
@@ -98,7 +98,7 @@ fn run() -> Result<i32, String> {
 
                 let message = message.as_str();
                 let tweet = futures::future::join_all(tweet_images)
-                                   .and_then(move |images| twitter.post_w_images(&message, &images).map_err(error_formatter!("Cannot tweet.")))
+                                   .and_then(move |images| twitter.post(&message, &images).map_err(error_formatter!("Cannot tweet.")))
                                    .then(api::twitter::Client::handle_post);
                 jobs.push(Box::new(tweet))
             }

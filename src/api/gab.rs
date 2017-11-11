@@ -19,30 +19,30 @@ pub mod payload {
     #[derive(Serialize, Debug)]
     pub struct Post<'a> {
         body: &'a str,
-        pub reply_to: String,
+        pub reply_to: &'a str,
         pub is_quote: u8,
-        pub gif: String,
-        pub category: Option<String>,
-        pub topic: Option<String>,
+        pub gif: &'a str,
+        pub category: Option<&'a str>,
+        pub topic: Option<&'a str>,
         pub share_twitter: bool,
         pub share_facebook: bool,
         pub is_replies_disabled: bool,
-        pub media_attachments: Vec<String>
+        pub media_attachments: &'a [String]
     }
 
     impl<'a> Post<'a> {
-        pub fn new(message: &'a str) -> Self {
+        pub fn new(message: &'a str, media_attachments: &'a [String]) -> Self {
             Post {
                 body: message,
-                reply_to: "".to_string(),
+                reply_to: "",
                 is_quote: 0,
-                gif: "".to_string(),
+                gif: "",
                 category: None,
                 topic: None,
                 share_twitter: false,
                 share_facebook: false,
                 is_replies_disabled: false,
-                media_attachments: Vec::new()
+                media_attachments
             }
         }
     }
@@ -83,22 +83,9 @@ impl<'a> Client<'a> {
         self.http.request(req)
     }
 
-    ///Post new message.
-    pub fn post(&self, message: &str) -> http::FutureResponse {
-        let message = payload::Post::new(message);
-
-        let mut req = http::Request::new(http::Method::Post, POST_URL.parse().unwrap());
-        req.headers_mut().set(http::ContentType::json());
-        req.headers_mut().set(self.auth());
-        req.set_body(serde_json::to_string(&message).unwrap());
-
-        self.http.request(req)
-    }
-
-    ///Posts new message with image
-    pub fn post_w_images(&self, message: &str, images: &[String]) -> http::FutureResponse {
-        let mut message = payload::Post::new(message);
-        message.media_attachments.extend(images.iter().cloned());
+    ///Posts new message.
+    pub fn post(&self, message: &str, images: &[String]) -> http::FutureResponse {
+        let message = payload::Post::new(message, images);
 
         let mut req = http::Request::new(http::Method::Post, POST_URL.parse().unwrap());
         req.headers_mut().set(http::ContentType::json());

@@ -47,12 +47,7 @@ impl Client {
     }
 
     ///Posts new tweet.
-    pub fn post(&self, message: &str) -> FutureResponse<tweet::Tweet> {
-        tweet::DraftTweet::new(message).send(&self.token, &self.handle)
-    }
-
-    ///Posts new tweet with images.
-    pub fn post_w_images(&self, message: &str, images: &[u64]) -> FutureResponse<tweet::Tweet> {
+    pub fn post(&self, message: &str, images: &[u64]) -> FutureResponse<tweet::Tweet> {
         tweet::DraftTweet::new(message).media_ids(images).send(&self.token, &self.handle)
     }
 

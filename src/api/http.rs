@@ -1,7 +1,5 @@
-extern crate cookie;
-
 pub use ::hyper::{Client, Request, Method, Response, StatusCode};
-pub use ::hyper::header::{Accept, ContentType, ContentLength, Authorization, Bearer, Cookie, SetCookie};
+pub use ::hyper::header::{Accept, ContentType, ContentLength, Authorization, Bearer};
 pub use ::hyper::client::{HttpConnector, FutureResponse};
 pub use ::hyper_tls::{HttpsConnector};
 pub use ::hyper::mime;
@@ -37,16 +35,15 @@ pub fn create_client(handle: &Handle) -> HttpClient {
                        .build(handle)
 }
 
-#[allow(dead_code)]
-pub fn from_set_to_cookie(set_cookie: Option<&SetCookie>) -> Cookie {
-    let mut result = Cookie::new();
-
-    if let Some(set_cookie) = set_cookie {
-        for setter in set_cookie.iter() {
-            let cookie = cookie::Cookie::parse(setter.to_string()).expect("Invalid cookie");
-            result.set(cookie.name().to_string(), cookie.value().to_string());
-        }
-    }
-
-    result
-}
+//pub fn from_set_to_cookie(set_cookie: Option<&SetCookie>) -> Cookie {
+//    let mut result = Cookie::new();
+//
+//    if let Some(set_cookie) = set_cookie {
+//        for setter in set_cookie.iter() {
+//            let cookie = cookie::Cookie::parse(setter.to_string()).expect("Invalid cookie");
+//            result.set(cookie.name().to_string(), cookie.value().to_string());
+//        }
+//    }
+//
+//    result
+//}
