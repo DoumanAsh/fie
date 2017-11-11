@@ -22,7 +22,6 @@ Use [example](fie.toml) as reference.
 ## Usage
 
 ```
-fie 0.2.0
 Douman <douman@gmx.se>
 
 Small and cute twitter app.
@@ -33,6 +32,7 @@ USAGE:
 FLAGS:
         --gab        Use gab.ai. By default all social medias are used unless flag is specified.
     -h, --help       Prints help information
+        --minds      Use Minds.com. By default all social medias are used unless flag is specified.
         --twitter    Use Twitter. By default all social medias are used unless flag is specified.
     -V, --version    Prints version information
 
