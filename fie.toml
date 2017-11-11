@@ -17,3 +17,12 @@ secret = "secret"
 [minds]
 username = "username"
 password = "password"
+
+# Configures which platforms to use by default.
+# If this section is omitted then it is assumed that all to use.
+# Otherwise missing platform means it is not used.
+# Allowed values true/false
+[platforms]
+minds = true
+gab = true
+twitter = true

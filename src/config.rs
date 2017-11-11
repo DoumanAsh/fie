@@ -14,6 +14,31 @@ use ::toml;
 
 pub const NAME: &'static str = "fie.toml";
 
+
+#[derive(Deserialize, Debug)]
+#[serde(default)]
+pub struct Platforms {
+    #[serde(default)]
+    pub gab: bool,
+    #[serde(default)]
+    pub twitter: bool,
+    #[serde(default)]
+    pub minds: bool
+}
+
+//If the whole section on Platforms is missing then we assume
+//that all platforms are used.
+//If section is present though, missing field means that user doesn't want platform.
+impl Default for Platforms {
+    fn default() -> Self {
+        Platforms {
+            gab: true,
+            twitter: true,
+            minds: true
+        }
+    }
+}
+
 #[derive(Deserialize, Debug)]
 pub struct Token {
     pub key: String,
@@ -42,6 +67,8 @@ pub struct Minds {
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
+    #[serde(default)]
+    pub platforms: Platforms,
     pub gab: Gab,
     pub twitter: Twitter,
     pub minds: Minds

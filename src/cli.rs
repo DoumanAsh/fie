@@ -3,6 +3,8 @@ use ::clap::{App, Arg, SubCommand, AppSettings, ArgMatches};
 use ::std::fmt::Display;
 use ::std::str::FromStr;
 
+use ::config::Platforms;
+
 #[inline(always)]
 ///Shortcut to create CLI argument
 fn arg(name: &str) -> Arg {
@@ -90,32 +92,23 @@ impl Commands {
     }
 }
 
-#[derive(Debug)]
-pub struct Flags {
-    ///Whether to use gab.ai
-    pub gab: bool,
-    ///Whether to use Twitter
-    pub twitter: bool,
-    ///Whether to use Minds
-    pub minds: bool,
-}
+type Flags = Platforms;
 
 impl Flags {
-    fn from_matches(matches: &ArgMatches<'static>) -> Self {
-        let mut gab = matches.is_present("gab");
-        let mut twitter = matches.is_present("twitter");
-        let mut minds = matches.is_present("minds");
+    fn from_matches(matches: &ArgMatches<'static>) -> Option<Self> {
+        let gab = matches.is_present("gab");
+        let twitter = matches.is_present("twitter");
+        let minds = matches.is_present("minds");
 
         if !gab && !twitter && !minds {
-            gab = true;
-            twitter = true;
-            minds = true
+            None
         }
-
-        Flags {
-            gab,
-            twitter,
-            minds
+        else {
+            Some(Flags {
+                gab,
+                twitter,
+                minds
+            })
         }
     }
 }
@@ -128,10 +121,10 @@ pub struct Args {
 }
 
 impl Args {
-    pub fn new() -> Result<Self, String> {
+    pub fn new(platforms: Platforms) -> Result<Self, String> {
         let matches = parser().get_matches();
         let command = Commands::from_matches(matches.subcommand());
-        let flags = Flags::from_matches(&matches);
+        let flags = Flags::from_matches(&matches).unwrap_or(platforms);
 
         Ok(Args {
             command,

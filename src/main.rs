@@ -17,15 +17,15 @@ use futures::future::Future;
 use futures::Stream;
 use tokio_core::reactor::Core;
 
-mod cli;
 #[macro_use]
 mod utils;
-mod api;
 mod config;
+mod cli;
+mod api;
 
 fn run() -> Result<i32, String> {
     let config = config::Config::from_file(&utils::get_config())?;
-    let args = cli::Args::new()?;
+    let args = cli::Args::new(config.platforms)?;
 
     let mut tokio_core = Core::new().map_err(error_formatter!("Unable to create tokio's event loop."))?;
     let http = api::http::create_client(&tokio_core.handle());
