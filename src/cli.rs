@@ -92,7 +92,7 @@ impl Commands {
     }
 }
 
-type Flags = Platforms;
+pub type Flags = Platforms;
 
 impl Flags {
     fn from_matches(matches: &ArgMatches<'static>) -> Option<Self> {

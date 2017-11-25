@@ -42,8 +42,8 @@ impl Client {
     }
 
     ///Uploads image to twitter.
-    pub fn upload_image(&self, image: &Image) -> FutureResponse<media::Media> {
-        media::upload_image(&image.content, &self.token, &self.handle)
+    pub fn upload_image<'a>(&self, image: &'a Image) -> media::UploadFuture<'a> {
+        media::UploadBuilder::new(&image.content[..], image.mime.clone()).call(&self.token, &self.handle)
     }
 
     ///Posts new tweet.
