@@ -55,7 +55,8 @@ fn init_api<'a>(mut tokio_core: &mut Core, http: &'a api::http::HttpClient, conf
 }
 
 fn run() -> Result<i32, String> {
-    let config = config::Config::from_file(&utils::get_config())?;
+    let config_path = utils::get_config();
+    let config = config::Config::from_file(&config_path)?;
     let args = cli::Args::new(config.platforms)?;
     let config = ApiConfigs {
         gab: config.gab,
@@ -141,6 +142,11 @@ fn run() -> Result<i32, String> {
             }
 
             tokio_core.run(futures::future::join_all(jobs)).unwrap();
+        },
+        cli::Commands::Env(env) => {
+            match env {
+                cli::EnvCommand::Config => println!("{}", config_path.display()),
+            }
         }
     };
 

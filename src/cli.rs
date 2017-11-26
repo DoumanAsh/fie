@@ -30,8 +30,8 @@ const ABOUT: &'static str = "
 Small and cute twitter app.";
 
 #[inline(always)]
-fn new_command() -> App<'static, 'static> {
-    SubCommand::with_name("post").about("Creates new tweet")
+fn post_command() -> App<'static, 'static> {
+    SubCommand::with_name("post").about("Creates new tweet.")
                                  .arg(arg("message").required(true)
                                                     .help("Message content"))
                                  .arg(arg("tag").short("t")
@@ -45,17 +45,37 @@ fn new_command() -> App<'static, 'static> {
                                                   .help("Adds image to post. Normally up to 4."))
 }
 
+#[inline(always)]
+fn env_config_command() -> App<'static, 'static> {
+    SubCommand::with_name("config").about("Prints path to config file.")
+}
+
+#[inline(always)]
+fn env_command() -> App<'static, 'static> {
+    SubCommand::with_name("env").about("Prints information about app environment.")
+                                .setting(AppSettings::ArgRequiredElseHelp)
+                                .subcommand(env_config_command())
+}
+
 pub fn parser() -> App<'static, 'static> {
     App::new(NAME).about(ABOUT)
                   .author(AUTHOR)
                   .version(VERSION)
                   .setting(AppSettings::ArgRequiredElseHelp)
                   .setting(AppSettings::VersionlessSubcommands)
-                  .subcommand(new_command())
                   .arg(flag("gab").help("Use gab.ai. By default all social medias are used unless flag is specified."))
                   .arg(flag("twitter").help("Use Twitter. By default all social medias are used unless flag is specified."))
                   .arg(flag("minds").help("Use Minds.com. By default all social medias are used unless flag is specified."))
+                  .subcommand(post_command())
+                  .subcommand(env_command())
 
+}
+
+#[derive(Debug)]
+///Env subcommand variants
+pub enum EnvCommand {
+    ///Prints configuration file.
+    Config
 }
 
 #[derive(Debug)]
@@ -66,9 +86,11 @@ pub enum Commands {
     ///# Parameters:
     ///
     ///* First - Text.
-    ///* Second - Tags.
-    ///* Third - Image to attach.
-    Post(String, Option<Vec<String>>)
+    ///* Second - Images to attach.
+    Post(String, Option<Vec<String>>),
+    ///Prints environment information.
+    Env(EnvCommand)
+
 }
 
 impl Commands {
@@ -87,6 +109,12 @@ impl Commands {
 
                 Commands::Post(message, image)
             },
+            "env" => {
+                match matches.subcommand() {
+                    ("config", _) => Commands::Env(EnvCommand::Config),
+                    _ => unimplemented!()
+                }
+            }
             _ => unimplemented!()
         }
     }

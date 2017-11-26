@@ -22,8 +22,6 @@ Use [example](fie.toml) as reference.
 ## Usage
 
 ```
-Douman <douman@gmx.se>
-
 Small and cute twitter app.
 
 USAGE:
@@ -37,8 +35,9 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
+    env     Prints information about app environment.
     help    Prints this message or the help of the given subcommand(s)
-    post    Creates new tweet
+    post    Creates new tweet.
 ```
 
 ### post
@@ -63,4 +62,20 @@ ARGS:
     <message>    Message content
 ```
 
+### env
 
+Prints information about app's environment.
+
+```
+Prints information about app environment.
+
+USAGE:
+    fie.exe env [SUBCOMMAND]
+
+FLAGS:
+    -h, --help    Prints help information
+
+SUBCOMMANDS:
+    config    Prints path to config file.
+    help      Prints this message or the help of the given subcommand(s)
+```
