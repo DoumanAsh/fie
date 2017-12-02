@@ -11,7 +11,7 @@ Small and cute social media CLI.
 
 * Gab (through unofficial API so may break);
 * Minds.com (through kinda official API);
-* Twitter
+* Twitter. Thanks to [egg-mode](https://github.com/QuietMisdreavus/twitter-rs) library.
 
 ## Configuration
 
