@@ -14,7 +14,6 @@ use ::toml;
 
 pub const NAME: &'static str = "fie.toml";
 
-
 #[derive(Deserialize, Debug)]
 #[serde(default)]
 pub struct Platforms {
