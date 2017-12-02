@@ -43,6 +43,7 @@ fn post_command() -> App<'static, 'static> {
                                                   .multiple(true)
                                                   .takes_value(true)
                                                   .help("Adds image to post. Normally up to 4."))
+                                 .arg(flag("nsfw").help("Whether post is NSFW or not."))
 }
 
 #[inline(always)]
@@ -79,6 +80,11 @@ pub enum EnvCommand {
 }
 
 #[derive(Debug)]
+pub struct PostFlags {
+    pub nsfw: bool
+}
+
+#[derive(Debug)]
 ///Command representation with all its arguments.
 pub enum Commands {
     ///Creates new tweet.
@@ -87,7 +93,7 @@ pub enum Commands {
     ///
     ///* First - Text.
     ///* Second - Images to attach.
-    Post(String, Option<Vec<String>>),
+    Post(String, PostFlags, Option<Vec<String>>),
     ///Prints environment information.
     Env(EnvCommand)
 
@@ -106,8 +112,11 @@ impl Commands {
                     Some(tags) => format!("{}\n{}", message, tags.map(|value| format!("#{}", value)).collect::<Vec<String>>().join(" ")),
                     None => message.to_string()
                 };
+                let flags = PostFlags {
+                    nsfw: matches.is_present("nsfw")
+                };
 
-                Commands::Post(message, image)
+                Commands::Post(message, flags, image)
             },
             "env" => {
                 match matches.subcommand() {

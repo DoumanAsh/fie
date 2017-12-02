@@ -14,11 +14,15 @@ use self::http::{
     MultipartBody,
 };
 
+use ::cli::PostFlags;
+
 const OAUTH2_URL: &'static str = "https://www.minds.com/oauth2/token";
 const POST_URL: &'static str = "https://www.minds.com/api/v1/newsfeed";
 const IMAGES_URL: &'static str = "https://www.minds.com/api/v1/media";
 
 pub mod payload {
+    use super::PostFlags;
+
     #[derive(Serialize, Debug)]
     pub struct Auth {
         grant_type: &'static str,
@@ -57,12 +61,12 @@ pub mod payload {
         thumbnail: Option<String>,
         url: Option<String>,
         attachment_guid: Option<String>,
-        mature: u8,
+        pub mature: u8,
         access_id: u8
     }
 
     impl<'a> Post<'a> {
-        pub fn new(message: &'a str, attachment_guid: Option<String>) -> Self {
+        pub fn new(message: &'a str, attachment_guid: Option<String>, flags: &PostFlags) -> Self {
             Post {
                 wire_threshold: None,
                 message,
@@ -72,7 +76,7 @@ pub mod payload {
                 thumbnail: None,
                 url: None,
                 attachment_guid,
-                mature: 0,
+                mature: flags.nsfw as u8,
                 access_id: 2
             }
         }
@@ -127,8 +131,8 @@ impl<'a> Client<'a> {
     }
 
     ///Post new message.
-    pub fn post(&self, message: &str, attachment_guid: Option<String>) -> http::FutureResponse {
-        let message = payload::Post::new(message, attachment_guid);
+    pub fn post(&self, message: &str, flags: &PostFlags, attachment_guid: Option<String>) -> http::FutureResponse {
+        let message = payload::Post::new(message, attachment_guid, flags);
 
         let mut req = http::Request::new(http::Method::Post, POST_URL.parse().unwrap());
         req.headers_mut().set(http::ContentType::json());

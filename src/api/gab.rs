@@ -12,10 +12,14 @@ use ::utils::{
     Image
 };
 
+use ::cli::PostFlags;
+
 const POST_URL: &'static str = "https://gab.ai/posts";
 const IMAGES_URL: &'static str = "https://gab.ai/api/media-attachments/images";
 
 pub mod payload {
+    use super::PostFlags;
+
     #[derive(Serialize, Debug)]
     pub struct Post<'a> {
         body: &'a str,
@@ -34,12 +38,12 @@ pub mod payload {
     }
 
     impl<'a> Post<'a> {
-        pub fn new(message: &'a str, media_attachments: &'a [String]) -> Self {
+        pub fn new(message: &'a str, media_attachments: &'a [String], flags: &PostFlags) -> Self {
             Post {
                 body: message,
                 reply_to: "",
                 is_quote: 0,
-                nsfw: 0,
+                nsfw: flags.nsfw as u8,
                 is_premium: 0,
                 _method: "post",
                 gif: "",
@@ -90,8 +94,8 @@ impl<'a> Client<'a> {
     }
 
     ///Posts new message.
-    pub fn post(&self, message: &str, images: &[String]) -> http::FutureResponse {
-        let message = payload::Post::new(message, images);
+    pub fn post(&self, message: &str, flags: &PostFlags, images: &[String]) -> http::FutureResponse {
+        let message = payload::Post::new(message, images, flags);
 
         let mut req = http::Request::new(http::Method::Post, POST_URL.parse().unwrap());
         req.headers_mut().set(http::ContentType::json());

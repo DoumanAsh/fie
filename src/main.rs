@@ -65,27 +65,27 @@ fn run() -> Result<i32, String> {
     };
 
     match args.command {
-        cli::Commands::Post(ref message, None) => {
+        cli::Commands::Post(ref message, ref flags, None) => {
             let (mut tokio_core, http) = init_http()?;
             let (gab, twitter, minds) = init_api(&mut tokio_core, &http, config, args.flags)?;
             let mut jobs: Vec<Box<Future<Item=(), Error=()>>> = vec![];
 
             if let Some(ref gab) = gab {
-                let gab_post = gab.post(&message, &[]).map_err(error_formatter!("Cannot post.")).then(api::gab::Client::handle_post);
+                let gab_post = gab.post(&message, &flags, &[]).map_err(error_formatter!("Cannot post.")).then(api::gab::Client::handle_post);
                 jobs.push(Box::new(gab_post))
             }
             if let Some(ref twitter) = twitter {
-                let tweet = twitter.post(&message, &[]).map_err(error_formatter!("Cannot tweet.")).then(api::twitter::Client::handle_post);
+                let tweet = twitter.post(&message, &flags, &[]).map_err(error_formatter!("Cannot tweet.")).then(api::twitter::Client::handle_post);
                 jobs.push(Box::new(tweet))
             }
             if let Some(ref minds) = minds {
-                let minds_post = minds.post(&message, None).map_err(error_formatter!("Cannot post.")).then(api::minds::Client::handle_post);
+                let minds_post = minds.post(&message, &flags, None).map_err(error_formatter!("Cannot post.")).then(api::minds::Client::handle_post);
                 jobs.push(Box::new(minds_post))
             }
 
             tokio_core.run(futures::future::join_all(jobs)).unwrap();
         },
-        cli::Commands::Post(ref message, Some(ref images)) => {
+        cli::Commands::Post(ref message, ref flags, Some(ref images)) => {
             let images = {
                 let mut result = vec![];
                 for image in images {
@@ -108,7 +108,7 @@ fn run() -> Result<i32, String> {
                                        .map(|response: api::gab::payload::UploadResponse| response.id));
                 }
 
-                let gab_post = futures::future::join_all(gab_images).and_then(move |images| gab.post(&message, &images).map_err(error_formatter!("Cannot post.")))
+                let gab_post = futures::future::join_all(gab_images).and_then(move |images| gab.post(&message, &flags, &images).map_err(error_formatter!("Cannot post.")))
                                                                     .then(api::gab::Client::handle_post);
                 jobs.push(Box::new(gab_post))
             }
@@ -120,7 +120,7 @@ fn run() -> Result<i32, String> {
                 }
 
                 let tweet = futures::future::join_all(tweet_images)
-                                   .and_then(move |images| twitter.post(&message, &images).map_err(error_formatter!("Cannot tweet.")))
+                                   .and_then(move |images| twitter.post(&message, &flags, &images).map_err(error_formatter!("Cannot tweet.")))
                                    .then(api::twitter::Client::handle_post);
                 jobs.push(Box::new(tweet))
             }
@@ -135,7 +135,7 @@ fn run() -> Result<i32, String> {
                                       .and_then(|response| response.body().concat2().map_err(error_formatter!("Cannot read image upload's response")))
                                       .and_then(|body| serde_json::from_slice(&body).map_err(error_formatter!("Cannot parse image upload's response")))
                                       .map(|response: api::minds::payload::UploadResponse| response.guid)
-                                      .and_then(move |image| minds.post(&message, Some(image)).map_err(error_formatter!("Cannot post.")))
+                                      .and_then(move |image| minds.post(&message, &flags, Some(image)).map_err(error_formatter!("Cannot post.")))
                                       .then(api::minds::Client::handle_post);
 
                 jobs.push(Box::new(minds_post))

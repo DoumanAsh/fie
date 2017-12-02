@@ -19,6 +19,8 @@ use ::utils::{
     Image
 };
 
+use ::cli::PostFlags;
+
 ///Twitter client.
 pub struct Client {
     ///Twitter access token.
@@ -47,8 +49,10 @@ impl Client {
     }
 
     ///Posts new tweet.
-    pub fn post(&self, message: &str, images: &[u64]) -> FutureResponse<tweet::Tweet> {
-        tweet::DraftTweet::new(message).media_ids(images).send(&self.token, &self.handle)
+    pub fn post(&self, message: &str, flags: &PostFlags, images: &[u64]) -> FutureResponse<tweet::Tweet> {
+        tweet::DraftTweet::new(message).media_ids(images)
+                                       .possibly_sensitive(flags.nsfw)
+                                       .send(&self.token, &self.handle)
     }
 
     pub fn handle_post(result: Result<Response<tweet::Tweet>, String>) -> future::FutureResult<(), ()> {
