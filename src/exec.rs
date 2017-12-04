@@ -84,18 +84,30 @@ impl<'a> Api<'a> {
     }
 }
 
+#[inline(always)]
+fn tags_join_with_prefix(tags: Vec<String>) -> String {
+    let mut result = String::new();
+
+    for tag in tags {
+        result.push_str(&format!("#{} ", tag));
+    }
+
+    //remove last white space
+    let _ = result.pop();
+
+    result
+}
+
 #[inline]
 pub fn int_post(post: cli::Post, tokio_core: &mut Core, api: &mut Api) -> Result<(), String> {
-    let mut message = post.message;
-    if post.tags.len() > 0 {
-        if message.len() != 0 {
-            message.push_str("\n");
+    let message = if post.tags.len() > 0 {
+        match post.message.as_str() {
+            "" => tags_join_with_prefix(post.tags),
+            message => format!("{}\n{}", message, tags_join_with_prefix(post.tags))
         }
-        for tag in post.tags {
-            message.push_str(&tag);
-            message.push(' ')
-        }
-    }
+    } else {
+        post.message
+    };
 
     match post.images {
         Some(ref images) if images.len() > 0 => post_w_image(&message, &post.flags, &images, tokio_core, api),

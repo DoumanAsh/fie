@@ -79,7 +79,7 @@ impl Commands {
                 let message = matches.value_of("message").unwrap().to_string();
                 let images = matches.values_of("image").map(|images| images.map(|image| image.to_string()).collect());
                 let tags = match matches.values_of("tag") {
-                    Some(tags) => tags.map(|value| format!("#{}", value)).collect::<Vec<String>>(),
+                    Some(tags) => tags.map(|value| value.to_string()).collect(),
                     None => vec![]
                 };
                 let flags = PostFlags {

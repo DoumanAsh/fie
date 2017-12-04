@@ -77,6 +77,11 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ::std::fs::File;
+    use ::std::io::{
+        BufReader,
+        Read
+    };
 
     #[test]
     fn deserialize() {
