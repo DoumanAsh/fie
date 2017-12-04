@@ -1,0 +1,16 @@
+# There can be multiple instances of [[post]]
+# Each will be executed separately.
+[[post]]
+message = """
+Testing multiple lines
+#ignore
+"""
+tags = [
+    "tag1",
+    "tag2"
+]
+images = [
+    "image1",
+    "image2"
+]
+flags = { nsfw = false}

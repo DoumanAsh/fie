@@ -68,3 +68,14 @@ pub fn get_config() -> PathBuf {
 pub fn empty_future_job() -> future::FutureResult<(), ()> {
     future::ok(())
 }
+
+///Reads content of file to string.
+pub fn read_file_to_string<P: AsRef<Path>>(path: P) -> Result<String, String> {
+    let file = File::open(path.as_ref()).map_err(error_formatter!("Cannot open config file."))?;
+    let mut file = BufReader::new(file);
+
+    let mut buffer = String::new();
+    file.read_to_string(&mut buffer).map_err(error_formatter!("Unable to read config file."))?;
+
+    Ok(buffer)
+}

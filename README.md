@@ -62,6 +62,24 @@ ARGS:
     <message>    Message content
 ```
 
+### batch
+
+```
+Load CLI arguments from file and runs it.
+
+USAGE:
+    fie.exe batch <file>
+
+FLAGS:
+    -h, --help    Prints help information
+
+ARGS:
+    <file>    TOML file that describes CLI arguments.
+```
+
+File examples:
+* [Post](fie_post.toml)
+
 ### env
 
 Prints information about app's environment.

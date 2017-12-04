@@ -13,6 +13,8 @@ extern crate hyper;
 extern crate hyper_tls;
 extern crate mime_guess;
 
+use std::convert;
+
 #[macro_use]
 mod utils;
 mod config;
@@ -32,7 +34,8 @@ fn run() -> Result<i32, String> {
     };
 
     match args.command {
-        cli::Commands::Post(message, flags, images) => exec::post(message, flags, images, config),
+        cli::Commands::Post(post) => exec::post(post, config),
+        cli::Commands::Batch(exec) => exec::batch(exec, config),
         cli::Commands::Env(env) => exec::env(env, config_path)
     }?;
 

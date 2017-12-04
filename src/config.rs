@@ -1,16 +1,11 @@
 //!Configuration module
-use ::std::fs::{
-    File
-};
 use ::std::path::{
     Path
 };
-use ::std::io::{
-    BufReader,
-    Read
-};
 
 use ::toml;
+
+use ::utils;
 
 pub const NAME: &'static str = "fie.toml";
 
@@ -75,13 +70,7 @@ pub struct Config {
 
 impl Config {
     pub fn from_file(path: &Path) -> Result<Self, String> {
-        let file = File::open(path).map_err(error_formatter!("Cannot open config file."))?;
-        let mut file = BufReader::new(file);
-
-        let mut buffer = String::new();
-        file.read_to_string(&mut buffer).map_err(error_formatter!("Unable to read config file."))?;
-
-        toml::from_str(&buffer).map_err(error_formatter!("Invalid config file!"))
+        toml::from_str(utils::read_file_to_string(path)?.as_str()).map_err(error_formatter!("Invalid config file!"))
     }
 }
 
