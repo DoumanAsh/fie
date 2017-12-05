@@ -166,7 +166,7 @@ pub fn post_w_image(message: &str, flags: &cli::PostFlags, images: &[String], to
         let mut tweet_images: Vec<_> = vec![];
         for image in &images {
             tweet_images.push(twitter.upload_image(&image).map_err(error_formatter!("Cannot upload image."))
-                              .map(|rsp| rsp.media_id));
+                              .map(|rsp| rsp.id));
         }
 
         let tweet = futures::future::join_all(tweet_images)
