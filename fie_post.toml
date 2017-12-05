@@ -1,5 +1,6 @@
 # There can be multiple instances of [[post]]
 # Each will be executed separately.
+# Use '' strings to escape special character \
 [[post]]
 message = """
 Testing multiple lines
