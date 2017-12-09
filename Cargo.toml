@@ -16,7 +16,7 @@ serde_json = "1"
 toml = "0"
 serde_derive = "1"
 
-egg-mode = { git = "https://github.com/QuietMisdreavus/twitter-rs" }
+egg-mode = "0.12"
 tokio-core = "0.*"
 futures = "0.*"
 hyper = "0.*"
