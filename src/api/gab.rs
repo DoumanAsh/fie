@@ -25,6 +25,7 @@ pub mod payload {
         body: &'a str,
         pub reply_to: &'a str,
         pub is_quote: u8,
+        pub is_html: u8,
         pub nsfw: u8,
         pub is_premium: u8,
         pub _method: &'a str,
@@ -33,7 +34,6 @@ pub mod payload {
         pub topic: Option<&'a str>,
         pub share_twitter: bool,
         pub share_facebook: bool,
-        pub is_replies_disabled: bool,
         pub media_attachments: &'a [String]
     }
 
@@ -43,6 +43,7 @@ pub mod payload {
                 body: message,
                 reply_to: "",
                 is_quote: 0,
+                is_html: 1,
                 nsfw: flags.nsfw as u8,
                 is_premium: 0,
                 _method: "post",
@@ -51,7 +52,6 @@ pub mod payload {
                 topic: None,
                 share_twitter: false,
                 share_facebook: false,
-                is_replies_disabled: false,
                 media_attachments
             }
         }
