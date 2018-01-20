@@ -2,6 +2,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/oc937oppd38x1y4y/branch/master?svg=true)](https://ci.appveyor.com/project/DoumanAsh/fie/branch/master)
 [![Build Status](https://travis-ci.org/DoumanAsh/fie.svg?branch=master)](https://travis-ci.org/DoumanAsh/fie)
+[![Crates.io](https://img.shields.io/crates/v/fie.svg)](https://crates.io/crates/fie)
 
 Small and cute social media CLI.
 
