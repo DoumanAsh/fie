@@ -43,7 +43,7 @@ pub mod payload {
                 body: message,
                 reply_to: "",
                 is_quote: 0,
-                is_html: 1,
+                is_html: 0,
                 nsfw: flags.nsfw as u8,
                 is_premium: 0,
                 _method: "post",
