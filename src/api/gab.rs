@@ -4,6 +4,7 @@ use ::serde_json;
 use super::http;
 use self::http::{
     MultipartBody,
+    DefaultHeaders
 };
 
 use ::config;
@@ -86,8 +87,10 @@ impl<'a> Client<'a> {
 
     ///Uploads image to gab.ai.
     pub fn upload_image(&self, image: &Image) -> http::FutureResponse {
-        let mut req = http::Request::new(http::Method::Post, IMAGES_URL.parse().unwrap());
-        req.headers_mut().set(self.auth());
+        let uri = format!("{}?token={}", IMAGES_URL, &self.config.token);
+        let mut req = http::Request::new(http::Method::Post, uri.parse().unwrap());
+        req.set_default_headers();
+        req.headers_mut().set(http::Referer::new(uri));
         req.set_multipart_body("-fie", &image.name, &image.mime, &image.content);
 
         self.http.request(req)
@@ -98,6 +101,7 @@ impl<'a> Client<'a> {
         let message = payload::Post::new(message, images, flags);
 
         let mut req = http::Request::new(http::Method::Post, POST_URL.parse().unwrap());
+        req.set_default_headers();
         req.headers_mut().set(http::ContentType::json());
         req.headers_mut().set(self.auth());
         req.set_body(serde_json::to_string(&message).unwrap());

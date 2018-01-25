@@ -1,11 +1,22 @@
 pub use ::hyper::{Client, Request, Method, Response, StatusCode};
-pub use ::hyper::header::{Accept, ContentType, ContentLength, Authorization, Bearer};
+pub use ::hyper::header::{Accept, Referer, ContentType, ContentLength, Authorization, Bearer, UserAgent};
 pub use ::hyper::client::{HttpConnector, FutureResponse};
 pub use ::hyper_tls::{HttpsConnector};
 pub use ::hyper::mime;
 use ::tokio_core::reactor::{
     Handle
 };
+
+pub trait DefaultHeaders {
+    fn set_default_headers(&mut self);
+}
+
+impl DefaultHeaders for Request {
+    fn set_default_headers(&mut self) {
+        self.headers_mut().set(Accept::json());
+        self.headers_mut().set(UserAgent::new("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36"));
+    }
+}
 
 pub trait MultipartBody {
     fn set_multipart_body(&mut self, boundary: &str, file_name: &str, mime: &mime::Mime, data: &[u8]);

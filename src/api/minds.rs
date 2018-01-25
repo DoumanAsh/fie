@@ -12,6 +12,7 @@ use ::utils::{
 use super::http;
 use self::http::{
     MultipartBody,
+    DefaultHeaders
 };
 
 use ::cli::PostFlags;
@@ -98,7 +99,7 @@ impl<'a> Client<'a> {
     pub fn new(http: &'a http::HttpClient, core: &mut Core, config: config::Minds) -> Result<Self, String> {
         let oauth2 = {
             let mut req = http::Request::new(http::Method::Post, OAUTH2_URL.parse().unwrap());
-            req.headers_mut().set(http::Accept::json());
+            req.set_default_headers();
             req.headers_mut().set(http::ContentType::json());
             let auth_body = payload::Auth::new(config.username, config.password);
             req.set_body(serde_json::to_string(&auth_body).unwrap());
@@ -124,6 +125,7 @@ impl<'a> Client<'a> {
     ///NOTE: Minds.com allows only one attachment
     pub fn upload_image(&self, image: &Image) -> http::FutureResponse {
         let mut req = http::Request::new(http::Method::Post, IMAGES_URL.parse().unwrap());
+        req.set_default_headers();
         req.headers_mut().set(self.auth());
         req.set_multipart_body("-fie", &image.name, &image.mime, &image.content);
 
@@ -135,6 +137,7 @@ impl<'a> Client<'a> {
         let message = payload::Post::new(message, attachment_guid, flags);
 
         let mut req = http::Request::new(http::Method::Post, POST_URL.parse().unwrap());
+        req.set_default_headers();
         req.headers_mut().set(http::ContentType::json());
         req.headers_mut().set(self.auth());
         req.set_body(serde_json::to_string(&message).unwrap());
