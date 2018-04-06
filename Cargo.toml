@@ -17,9 +17,13 @@ toml = "0"
 serde_derive = "1"
 
 egg-mode = "0.12"
-tokio-core = "0.*"
-futures = "0.*"
-hyper = "0.*"
+tokio-core = "0.1"
+futures = "0.1"
+hyper = "0.11"
 hyper-tls = "0.*"
 mime_guess = "2.0.0-alpha.2"
 cookie = "0"
+
+[profile.release]
+lto = true
+opt-level = 2
