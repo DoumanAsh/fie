@@ -1,11 +1,14 @@
 //!Configuration module
+extern crate toml;
+
+use ::std::env;
 use ::std::path::{
-    Path
+    Path,
+    PathBuf
 };
 
-use ::toml;
-
-use ::utils;
+use ::io;
+use ::misc::ResultExt;
 
 pub const NAME: &'static str = "fie.toml";
 
@@ -70,7 +73,20 @@ pub struct Config {
 
 impl Config {
     pub fn from_file(path: &Path) -> Result<Self, String> {
-        toml::from_str(utils::read_file_to_string(path)?.as_str()).map_err(error_formatter!("Invalid config file!"))
+        toml::from_str(io::read_file_to_string(path)?.as_str()).format_err("Invalid config file!")
+    }
+
+    pub fn default_config_path() -> PathBuf {
+        let mut result = env::current_exe().unwrap();
+        result.set_file_name(NAME);
+
+        result
+    }
+
+    pub fn from_default_config() -> Result<Self, String> {
+        let path = Self::default_config_path();
+
+        Self::from_file(&path)
     }
 }
 

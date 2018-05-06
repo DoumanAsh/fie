@@ -1,8 +1,11 @@
-use ::convert;
+extern crate toml;
+
+use ::std::convert;
 
 use ::config::Platforms;
-use ::toml;
-use ::utils;
+use ::io;
+use ::actors::messages::PostFlags;
+use ::misc::ResultExt;
 
 mod clap;
 use self::clap::{ArgMatches, parser};
@@ -12,12 +15,6 @@ use self::clap::{ArgMatches, parser};
 pub enum EnvCommand {
     ///Prints configuration file.
     Config
-}
-
-#[derive(Deserialize, Default, Debug)]
-pub struct PostFlags {
-    #[serde(default)]
-    pub nsfw: bool
 }
 
 #[derive(Deserialize, Debug)]
@@ -90,8 +87,8 @@ impl Commands {
             },
             "batch" => {
                 let file = matches.value_of("file").unwrap();
-                let file = utils::read_file_to_string(file)?;
-                let file: Batch = toml::from_str(&file).map_err(error_formatter!("Invalid config file!"))?;
+                let file = io::read_file_to_string(file)?;
+                let file: Batch = toml::from_str(&file).format_err("Invalid config file!")?;
                 Ok(file.into())
             }
             "env" => {
