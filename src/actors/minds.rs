@@ -17,16 +17,16 @@ mod payload {
     use super::PostFlags;
 
     #[derive(Serialize, Debug)]
-    pub struct Auth {
+    pub struct Auth<'a> {
         grant_type: &'static str,
         client_id: &'static str,
         client_secret: &'static str,
-        username: String,
-        password: String,
+        username: &'a str,
+        password: &'a str,
     }
 
-    impl Auth {
-        pub fn new(username: String, password: String) -> Self {
+    impl<'a> Auth<'a> {
+        pub fn new(username: &'a str, password: &'a str) -> Self {
             Auth {
                 grant_type: "password",
                 client_id: "",
@@ -81,9 +81,9 @@ mod payload {
     }
 }
 
-pub struct Minds {
-    config: Option<config::Minds>,
-    oauth2: Option<payload::Oauth2>,
+pub enum Minds {
+    NotStarted(config::Minds),
+    Started(payload::Oauth2)
 }
 
 impl Actor for Minds {
@@ -91,10 +91,17 @@ impl Actor for Minds {
 
     fn started(&mut self, ctx: &mut Context<Self>) {
         const OAUTH2_URL: &'static str = "https://www.minds.com/oauth2/token";
-        let config = self.config.take().unwrap();
+        let config = match self {
+            &mut Minds::NotStarted(ref config) => config,
+            _ => {
+                eprintln!("Minds: internal error. Actor in a started state already");
+                return ctx.stop();
+            }
+        };
+
         let mut req = ClientRequest::post(OAUTH2_URL);
         let req = req.set_default_headers()
-            .json(payload::Auth::new(config.username, config.password))
+            .json(payload::Auth::new(&config.username, &config.password))
             .map_err(|error| format!("Unable to serialize oauth2 request. Error: {}", error));
 
         let req = match req {
@@ -112,7 +119,7 @@ impl Actor for Minds {
                 ctx.stop();
             })
             .and_then(|rsp, act, _ctx| {
-                rsp.json().into_actor(act).map(|oauth2, act, _ctx| act.oauth2 = Some(oauth2)).map_err(|error, _act, ctx| {
+                rsp.json().into_actor(act).map(|oauth2, act, _ctx| *act = Minds::Started(oauth2)).map_err(|error, _act, ctx| {
                     eprintln!("Minds oauth2 parse error: {}", error);
                     ctx.stop()
                 })
@@ -123,10 +130,7 @@ impl Actor for Minds {
 
 impl Minds {
     pub fn new(config: config::Minds) -> Self {
-        Self {
-            config: Some(config),
-            oauth2: None,
-        }
+        Minds::NotStarted(config)
     }
 }
 
@@ -136,9 +140,9 @@ impl Handler<UploadImage> for Minds {
     fn handle(&mut self, msg: UploadImage, _: &mut Self::Context) -> Self::Result {
         const IMAGES_URL: &'static str = "https://www.minds.com/api/v1/media";
 
-        let access_token = match self.oauth2.as_ref() {
-            Some(ref oauth2) => &oauth2.access_token,
-            None => return Box::new(future::err("Unable to send Minds request".to_string())),
+        let access_token = match self {
+            &mut Minds::Started(ref oauth2) => &oauth2.access_token,
+            _ => return Box::new(future::err("Unable to send Minds request".to_string()))
         };
 
         let name = &msg.0.name;
@@ -176,9 +180,9 @@ impl Handler<PostMessage> for Minds {
     fn handle(&mut self, msg: PostMessage, _: &mut Self::Context) -> Self::Result {
         const POST_URL: &'static str = "https://www.minds.com/api/v1/newsfeed";
 
-        let access_token = match self.oauth2.as_ref() {
-            Some(ref oauth2) => &oauth2.access_token,
-            None => return Box::new(future::err("Unable to send Minds request".to_string())),
+        let access_token = match self {
+            &mut Minds::Started(ref oauth2) => &oauth2.access_token,
+            _ => return Box::new(future::err("Unable to send Minds request".to_string()))
         };
 
         let PostMessage { flags, content, images } = msg;

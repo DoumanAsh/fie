@@ -223,7 +223,7 @@ impl Handler<Post> for API {
                         let self_addr: Addr<Unsync, _> = ctx.address();
 
                         let gab_upload = future::join_all(gab_images).map_err(|error| eprintln!("{}", error));
-                        let gab_upload = gab_upload.and_then(move |result| -> Box<Future<Item = (), Error = ()>> {
+                        let gab_upload = gab_upload.and_then(move |result| -> ResponseFuture<(), ()> {
                             let mut gab_images = vec![];
                             for res in result {
                                 match res {
@@ -333,6 +333,7 @@ impl Handler<PostGab> for API {
             if !gab.connected() {
                 return Box::new(future::ok(()));
             }
+
             let job = gab.send(msg)
                 .map(|result| match result {
                     Ok(result) => println!("Gab(id={}) OK", result),
@@ -365,6 +366,7 @@ impl Handler<PostMinds> for API {
             if !minds.connected() {
                 return Box::new(future::ok(()));
             }
+
             let job = minds
                 .send(msg)
                 .map(|result| match result {
