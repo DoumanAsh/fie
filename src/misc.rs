@@ -46,7 +46,6 @@ impl ClientRequestBuilderExt for ClientRequestBuilder {
             http::header::USER_AGENT,
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36",
         ).header(http::header::ACCEPT_ENCODING, "gzip, deflate")
-            .timeout(time::Duration::new(TIMEOUT_S, 0))
     }
 
     fn set_multipart_body(&mut self, file_name: &str, mime: &Mime, data: &[u8]) -> Result<ClientRequest, String> {
