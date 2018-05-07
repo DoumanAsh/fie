@@ -97,6 +97,15 @@ impl Handler<Post> for API {
             message
         };
 
+        //this is post base's part.
+        //as each API accepts images in own format.
+        //we'll need set accordingly
+        let post = messages::PostMessage {
+            flags,
+            content: message,
+            images: None,
+        };
+
         match images {
             Some(ref images) if images.len() > 0 => {
                 let images = {
@@ -113,7 +122,7 @@ impl Handler<Post> for API {
                     result
                 };
 
-                let mut jobs: Vec<Box<Future<Item = (), Error = ()>>> = vec![];
+                let mut jobs: Vec<ResponseFuture<(), ()>> = vec![];
 
                 if let Some(twitter) = self.twitter.take() {
                     if twitter.connected() {
@@ -127,8 +136,7 @@ impl Handler<Post> for API {
 
                         let self_addr: Addr<Unsync, _> = ctx.address();
 
-                        let message = message.clone();
-                        let flags = flags.clone();
+                        let mut post = post.clone();
                         let tweet_upload = future::join_all(tweet_images).map_err(|error| eprintln!("{}", error));
                         let tweet_upload = tweet_upload.and_then(move |result| -> ResponseFuture<(), ()> {
                             let mut tweet_images = vec![];
@@ -141,11 +149,7 @@ impl Handler<Post> for API {
                                     },
                                 }
                             }
-                            let post = messages::PostMessage {
-                                flags,
-                                content: message,
-                                images: Some(tweet_images),
-                            };
+                            post.images = Some(tweet_images);
 
                             let result = self_addr
                                 .send(PostTweet(post))
@@ -176,8 +180,7 @@ impl Handler<Post> for API {
 
                         let self_addr: Addr<Unsync, _> = ctx.address();
 
-                        let message = message.clone();
-                        let flags = flags.clone();
+                        let mut post = post.clone();
                         let image = unsafe { images.get_unchecked(0).clone() };
                         let image = messages::UploadImage(image);
                         let minds_post = minds.send(image).map_err(|error| eprintln!("Minds upload img actix mailbox error: {}", error)).and_then(
@@ -188,11 +191,7 @@ impl Handler<Post> for API {
                                         return Box::new(future::ok(()));
                                     },
                                     Ok(image) => {
-                                        let post = messages::PostMessage {
-                                            flags,
-                                            content: message,
-                                            images: Some(vec![image]),
-                                        };
+                                        post.images = Some(vec![image]);
 
                                         let result = self_addr
                                             .send(PostMinds(post))
@@ -222,6 +221,7 @@ impl Handler<Post> for API {
 
                         let self_addr: Addr<Unsync, _> = ctx.address();
 
+                        let mut post = post;
                         let gab_upload = future::join_all(gab_images).map_err(|error| eprintln!("{}", error));
                         let gab_upload = gab_upload.and_then(move |result| -> ResponseFuture<(), ()> {
                             let mut gab_images = vec![];
@@ -234,11 +234,7 @@ impl Handler<Post> for API {
                                     },
                                 }
                             }
-                            let post = messages::PostMessage {
-                                flags,
-                                content: message,
-                                images: Some(gab_images),
-                            };
+                            post.images = Some(gab_images);
 
                             let result = self_addr
                                 .send(PostGab(post))
@@ -258,12 +254,6 @@ impl Handler<Post> for API {
                 Box::new(future::join_all(jobs).map(|_| ()))
             },
             _ => {
-                let post = messages::PostMessage {
-                    flags,
-                    content: message,
-                    images: None,
-                };
-
                 let mut jobs: Vec<_> = vec![];
 
                 if self.twitter.is_some() {
@@ -273,7 +263,7 @@ impl Handler<Post> for API {
                     jobs.push(self.handle(PostGab(post.clone()), ctx));
                 }
                 if self.minds.is_some() {
-                    jobs.push(self.handle(PostMinds(post.clone()), ctx));
+                    jobs.push(self.handle(PostMinds(post), ctx));
                 }
 
                 Box::new(future::join_all(jobs).map(|_| ()))
@@ -299,7 +289,6 @@ impl Handler<PostTweet> for API {
                 return Box::new(future::ok(()));
             }
 
-            let msg = msg.clone();
             let tweet = twitter
                 .send(msg)
                 .map(|result| match result {
