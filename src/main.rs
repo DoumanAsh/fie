@@ -23,7 +23,6 @@ fn run() -> Result<i32, String> {
                                                                        .start();
 
             let _ = system.run_until_complete(api.send(post));
-            Ok(0)
         },
         cli::Commands::Batch(exec) => match exec.post {
             Some(posts) => {
@@ -36,17 +35,15 @@ fn run() -> Result<i32, String> {
                     println!(">>>Post #{}", idx + 1);
                     let _ = system.run_until_complete(api.send(post));
                 }
-                Ok(0)
             }
-            None => Ok(0),
+            None => (),
         },
         cli::Commands::Env(env) => match env {
-            cli::EnvCommand::Config => {
-                println!("{}", config::Config::default_config_path().display());
-                Ok(0)
-            }
+            cli::EnvCommand::Config => println!("{}", config::Config::default_config_path().display()),
         }
     }
+
+    Ok(0)
 }
 
 fn main() {

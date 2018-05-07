@@ -118,128 +118,138 @@ impl Handler<Post> for API {
 
                 let mut jobs: Vec<Box<Future<Item=(), Error=()>>> = vec![];
 
-                if let Some(ref twitter) = self.twitter.as_ref() {
-                    let mut tweet_images: Vec<_> = vec![];
-                    for image in images.iter() {
-                        let upload_img = messages::UploadImage(image.clone());
-                        let upload_img = twitter.send(upload_img)
-                                                .map_err(|error| format!("Tweet upload img actix mailbox error: {}", error));
-                        tweet_images.push(upload_img)
-                    };
-
-                    let self_addr: Addr<Unsync, _> = ctx.address();
-
-                    let message = message.clone();
-                    let flags = flags.clone();
-                    let tweet_upload = future::join_all(tweet_images).map_err(|error| eprintln!("{}", error));
-                    let tweet_upload = tweet_upload.and_then(move |result| -> Box<Future<Item=(), Error=()>> {
-                        let mut tweet_images = vec![];
-                        for res in result {
-                            match res {
-                                Ok(image) => tweet_images.push(image),
-                                Err(error) => {
-                                    eprintln!("{}", error);
-                                    return Box::new(future::ok(()));
-                                }
-                            }
-                        }
-                        let post = messages::PostMessage {
-                            flags,
-                            content: message,
-                            images: Some(tweet_images)
+                if let Some(twitter) = self.twitter.take() {
+                    if twitter.connected() {
+                        //If not connected do not return it back
+                        let mut tweet_images: Vec<_> = vec![];
+                        for image in images.iter() {
+                            let upload_img = messages::UploadImage(image.clone());
+                            let upload_img = twitter.send(upload_img)
+                                                    .map_err(|error| format!("Tweet upload img actix mailbox error: {}", error));
+                            tweet_images.push(upload_img)
                         };
 
-                        let result = self_addr.send(PostTweet(post)).map_err(|error| {
-                            eprintln!("Tweet upload mailbox error: {}", error);
-                        }).map(|_| ());
+                        let self_addr: Addr<Unsync, _> = ctx.address();
 
-                        Box::new(result)
-                    });
+                        let message = message.clone();
+                        let flags = flags.clone();
+                        let tweet_upload = future::join_all(tweet_images).map_err(|error| eprintln!("{}", error));
+                        let tweet_upload = tweet_upload.and_then(move |result| -> ResponseFuture<(), ()> {
+                            let mut tweet_images = vec![];
+                            for res in result {
+                                match res {
+                                    Ok(image) => tweet_images.push(image),
+                                    Err(error) => {
+                                        eprintln!("{}", error);
+                                        return Box::new(future::ok(()));
+                                    }
+                                }
+                            }
+                            let post = messages::PostMessage {
+                                flags,
+                                content: message,
+                                images: Some(tweet_images)
+                            };
 
-                    //to guarantee that future's result will not be error
-                    jobs.push(Box::new(tweet_upload.or_else(|_| Ok(()))));
-                }
-                if let Some(ref minds) = self.minds.as_ref() {
-                    //TODO: For now Minds.com accepts only one attachment.
-                    match images.len() {
-                        0 => {
-                            eprintln!("Unexpected error. Minds actor gets 0 images but should be at least one");
-                            return Box::new(future::err(()));
-                        }
-                        1 => (),
-                        _ => eprintln!("Minds.com accepts only one attachment, only first image will be attached")
+                            let result = self_addr.send(PostTweet(post)).map_err(|error| {
+                                eprintln!("Tweet upload mailbox error: {}", error);
+                            }).map(|_| ());
 
+                            Box::new(result)
+                        });
+
+                        //to guarantee that future's result will not be error
+                        jobs.push(Box::new(tweet_upload.or_else(|_| Ok(()))));
+                        self.twitter = Some(twitter);
                     }
-
-                    let self_addr: Addr<Unsync, _> = ctx.address();
-
-                    let message = message.clone();
-                    let flags = flags.clone();
-                    let image = unsafe { images.get_unchecked(0).clone() };
-                    let image = messages::UploadImage(image);
-                    let minds_post = minds.send(image)
-                                          .map_err(|error| eprintln!("Minds upload img actix mailbox error: {}", error))
-                                          .and_then(move |result| -> Box<Future<Item=(), Error=()>> {
-                                              match result {
-                                                  Err(error) => {
-                                                      eprintln!("{}", error);
-                                                      return Box::new(future::ok(()));
-                                                  },
-                                                  Ok(image) => {
-                                                      let post = messages::PostMessage {
-                                                          flags,
-                                                          content: message,
-                                                          images: Some(vec![image])
-                                                      };
-
-
-                                                      let result = self_addr.send(PostMinds(post)).map_err(|error| {
-                                                          eprintln!("Minds upload mailbox error: {}", error);
-                                                      }).map(|_| ());
-
-                                                      Box::new(result)
-                                                  },
-                                              }});
-
-                    jobs.push(Box::new(minds_post.or_else(|_| Ok(()))));
                 }
-                if let Some(ref gab) = self.gab.as_ref() {
-                    let mut gab_images: Vec<_> = vec![];
-                    for image in images.iter() {
-                        let upload_img = messages::UploadImage(image.clone());
-                        let upload_img = gab.send(upload_img)
-                                            .map_err(|error| format!("Gab upload img actix mailbox error: {}", error));
-                        gab_images.push(upload_img)
-                    };
+                if let Some(minds) = self.minds.take() {
+                    if minds.connected() {
+                        //TODO: For now Minds.com accepts only one attachment.
+                        match images.len() {
+                            0 => {
+                                eprintln!("Unexpected error. Minds actor gets 0 images but should be at least one");
+                                return Box::new(future::err(()));
+                            },
+                            1 => (),
+                            _ => eprintln!("Minds.com accepts only one attachment, only first image will be attached")
 
-                    let self_addr: Addr<Unsync, _> = ctx.address();
-
-                    let gab_upload = future::join_all(gab_images).map_err(|error| eprintln!("{}", error));
-                    let gab_upload = gab_upload.and_then(move |result| -> Box<Future<Item=(), Error=()>> {
-                        let mut gab_images = vec![];
-                        for res in result {
-                            match res {
-                                Ok(image) => gab_images.push(image),
-                                Err(error) => {
-                                    eprintln!("{}", error);
-                                    return Box::new(future::ok(()));
-                                }
-                            }
                         }
-                        let post = messages::PostMessage {
-                            flags,
-                            content: message,
-                            images: Some(gab_images)
+
+                        let self_addr: Addr<Unsync, _> = ctx.address();
+
+                        let message = message.clone();
+                        let flags = flags.clone();
+                        let image = unsafe { images.get_unchecked(0).clone() };
+                        let image = messages::UploadImage(image);
+                        let minds_post = minds.send(image)
+                                              .map_err(|error| eprintln!("Minds upload img actix mailbox error: {}", error))
+                                              .and_then(move |result| -> ResponseFuture<(), ()> {
+                                                  match result {
+                                                      Err(error) => {
+                                                          eprintln!("{}", error);
+                                                          return Box::new(future::ok(()));
+                                                      },
+                                                      Ok(image) => {
+                                                          let post = messages::PostMessage {
+                                                              flags,
+                                                              content: message,
+                                                              images: Some(vec![image])
+                                                          };
+
+
+                                                          let result = self_addr.send(PostMinds(post)).map_err(|error| {
+                                                              eprintln!("Minds upload mailbox error: {}", error);
+                                                          }).map(|_| ());
+
+                                                          Box::new(result)
+                                                      },
+                                                  }});
+
+                        jobs.push(Box::new(minds_post.or_else(|_| Ok(()))));
+                        self.minds = Some(minds);
+                    }
+                }
+                if let Some(gab) = self.gab.take() {
+                    if gab.connected() {
+                        let mut gab_images: Vec<_> = vec![];
+                        for image in images.iter() {
+                            let upload_img = messages::UploadImage(image.clone());
+                            let upload_img = gab.send(upload_img)
+                                                .map_err(|error| format!("Gab upload img actix mailbox error: {}", error));
+                            gab_images.push(upload_img)
                         };
 
-                        let result = self_addr.send(PostGab(post)).map_err(|error| {
-                            eprintln!("Gab upload mailbox error: {}", error);
-                        }).map(|_| ());
+                        let self_addr: Addr<Unsync, _> = ctx.address();
 
-                        Box::new(result)
-                    });
+                        let gab_upload = future::join_all(gab_images).map_err(|error| eprintln!("{}", error));
+                        let gab_upload = gab_upload.and_then(move |result| -> Box<Future<Item=(), Error=()>> {
+                            let mut gab_images = vec![];
+                            for res in result {
+                                match res {
+                                    Ok(image) => gab_images.push(image),
+                                    Err(error) => {
+                                        eprintln!("{}", error);
+                                        return Box::new(future::ok(()));
+                                    }
+                                }
+                            }
+                            let post = messages::PostMessage {
+                                flags,
+                                content: message,
+                                images: Some(gab_images)
+                            };
 
-                    jobs.push(Box::new(gab_upload.or_else(|_| Ok(()))));
+                            let result = self_addr.send(PostGab(post)).map_err(|error| {
+                                eprintln!("Gab upload mailbox error: {}", error);
+                            }).map(|_| ());
+
+                            Box::new(result)
+                        });
+
+                        jobs.push(Box::new(gab_upload.or_else(|_| Ok(()))));
+                        self.gab = Some(gab);
+                    }
                 }
 
                 Box::new(future::join_all(jobs).map(|_| ()))
@@ -281,7 +291,7 @@ impl Handler<PostTweet> for API {
     fn handle(&mut self, msg: PostTweet, _ctx: &mut Self::Context) -> Self::Result {
         let msg = msg.0;
 
-        if let Some(ref twitter) = self.twitter.as_ref() {
+        if let Some(twitter) = self.twitter.take() {
             if !twitter.connected() {
                 return Box::new(future::ok(()))
             }
@@ -296,6 +306,7 @@ impl Handler<PostTweet> for API {
                                    eprintln!("Twitter Actix mailbox error: {}", error);
                                    Ok(())
                                });
+            self.twitter = Some(twitter);
             Box::new(tweet)
         } else {
             Box::new(future::ok(()))
@@ -314,11 +325,11 @@ impl Handler<PostGab> for API {
 
     fn handle(&mut self, msg: PostGab, _ctx: &mut Self::Context) -> Self::Result {
         let msg = msg.0;
-        if let Some(ref gab) = self.gab.as_ref() {
+        if let Some(gab) = self.gab.take() {
             if !gab.connected() {
                 return Box::new(future::ok(()))
             }
-            let gab = gab.send(msg)
+            let job = gab.send(msg)
                          .map(|result| match result {
                              Ok(result) => println!("Gab(id={}) OK", result),
                              Err(error) => println!("Gab Error: {}", error)
@@ -327,7 +338,8 @@ impl Handler<PostGab> for API {
                              eprintln!("Gab Actix mailbox error: {}", error);
                              Ok(())
                          });
-            Box::new(gab)
+            self.gab = Some(gab);
+            Box::new(job)
         } else {
             Box::new(future::ok(()))
         }
@@ -345,20 +357,21 @@ impl Handler<PostMinds> for API {
 
     fn handle(&mut self, msg: PostMinds, _ctx: &mut Self::Context) -> Self::Result {
         let msg = msg.0;
-        if let Some(ref minds) = self.minds.as_ref() {
+        if let Some(minds) = self.minds.take() {
             if !minds.connected() {
                 return Box::new(future::ok(()))
             }
-            let minds = minds.send(msg)
-                             .map(|result| match result {
-                                 Ok(result) => println!("Minds(id={}) OK", result),
-                                 Err(error) => println!("Minds Error: {}", error)
-                             })
-                             .or_else(|error| {
-                                 eprintln!("Minds Actix mailbox error: {}", error);
-                                 Ok(())
-                             });
-            Box::new(minds)
+            let job = minds.send(msg)
+                           .map(|result| match result {
+                               Ok(result) => println!("Minds(id={}) OK", result),
+                               Err(error) => println!("Minds Error: {}", error)
+                           })
+                           .or_else(|error| {
+                               eprintln!("Minds Actix mailbox error: {}", error);
+                               Ok(())
+                           });
+            self.minds = Some(minds);
+            Box::new(job)
         } else {
             Box::new(future::ok(()))
         }
