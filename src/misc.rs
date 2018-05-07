@@ -1,20 +1,16 @@
 extern crate actix_web;
 extern crate mime_guess;
 
-use ::std::fmt;
-use ::std::time;
+use std::fmt;
+use std::time;
 
+use self::actix_web::client::{ClientRequest, ClientRequestBuilder, SendRequest};
 use self::actix_web::http;
-use self::actix_web::client::{
-    ClientRequestBuilder,
-    ClientRequest,
-    SendRequest
-};
 use self::mime_guess::Mime;
 
-///Extension to std Result.
+/// Extension to std Result.
 pub trait ResultExt<T, E> {
-    ///Formats error to string.
+    /// Formats error to string.
     fn format_err(self, prefix: &str) -> Result<T, String>;
 }
 
@@ -31,9 +27,10 @@ pub trait ClientRequestExt {
 }
 impl ClientRequestExt for ClientRequest {
     fn send_ext(self) -> SendRequest {
-        self.send().timeout(time::Duration::new(TIMEOUT_S, 0))
-                   .conn_timeout(time::Duration::new(TIMEOUT_S, 0))
-                   .wait_timeout(time::Duration::new(TIMEOUT_S, 0))
+        self.send()
+            .timeout(time::Duration::new(TIMEOUT_S, 0))
+            .conn_timeout(time::Duration::new(TIMEOUT_S, 0))
+            .wait_timeout(time::Duration::new(TIMEOUT_S, 0))
     }
 }
 
@@ -45,8 +42,10 @@ pub trait ClientRequestBuilderExt {
 
 impl ClientRequestBuilderExt for ClientRequestBuilder {
     fn set_default_headers(&mut self) -> &mut Self {
-        self.header(http::header::USER_AGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36")
-            .header(http::header::ACCEPT_ENCODING, "gzip, deflate")
+        self.header(
+            http::header::USER_AGENT,
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36",
+        ).header(http::header::ACCEPT_ENCODING, "gzip, deflate")
             .timeout(time::Duration::new(TIMEOUT_S, 0))
     }
 

@@ -1,20 +1,20 @@
 extern crate toml;
 
-use ::std::convert;
+use std::convert;
 
-use ::config::Platforms;
-use ::io;
-use ::actors::messages::PostFlags;
-use ::misc::ResultExt;
+use actors::messages::PostFlags;
+use config::Platforms;
+use io;
+use misc::ResultExt;
 
 mod clap;
-use self::clap::{ArgMatches, parser};
+use self::clap::{parser, ArgMatches};
 
 #[derive(Deserialize, Debug)]
-///Env subcommand variants
+/// Env subcommand variants
 pub enum EnvCommand {
-    ///Prints configuration file.
-    Config
+    /// Prints configuration file.
+    Config,
 }
 
 #[derive(Deserialize, Debug)]
@@ -23,29 +23,29 @@ pub struct Post {
     pub tags: Vec<String>,
     #[serde(default)]
     pub flags: PostFlags,
-    pub images: Option<Vec<String>>
+    pub images: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Batch {
-    pub post: Option<Vec<Post>>
+    pub post: Option<Vec<Post>>,
 }
 
 #[derive(Debug)]
-///Command representation with all its arguments.
+/// Command representation with all its arguments.
 pub enum Commands {
-    ///Creates new tweet.
+    /// Creates new tweet.
     ///
-    ///# Parameters:
+    /// # Parameters:
     ///
-    ///* First - Text.
-    ///* Second - Flags.
-    ///* Third - Images to attach.
+    /// * First - Text.
+    /// * Second - Flags.
+    /// * Third - Images to attach.
     Post(Post),
-    ///Prints environment information.
+    /// Prints environment information.
     Env(EnvCommand),
-    ///Executes batch of commands.
-    Batch(Batch)
+    /// Executes batch of commands.
+    Batch(Batch),
 }
 
 impl convert::From<EnvCommand> for Commands {
@@ -77,27 +77,23 @@ impl Commands {
                 let images = matches.values_of("image").map(|images| images.map(|image| image.to_string()).collect());
                 let tags = match matches.values_of("tag") {
                     Some(tags) => tags.map(|value| value.to_string()).collect(),
-                    None => vec![]
+                    None => vec![],
                 };
-                let flags = PostFlags {
-                    nsfw: matches.is_present("nsfw")
-                };
+                let flags = PostFlags { nsfw: matches.is_present("nsfw") };
 
-                Ok(Post{message, tags, flags, images}.into())
+                Ok(Post { message, tags, flags, images }.into())
             },
             "batch" => {
                 let file = matches.value_of("file").unwrap();
                 let file = io::read_file_to_string(file)?;
                 let file: Batch = toml::from_str(&file).format_err("Invalid config file!")?;
                 Ok(file.into())
-            }
-            "env" => {
-                Ok(match matches.subcommand() {
-                    ("config", _) => EnvCommand::Config.into(),
-                    _ => unimplemented!()
-                })
-            }
-            _ => unimplemented!()
+            },
+            "env" => Ok(match matches.subcommand() {
+                ("config", _) => EnvCommand::Config.into(),
+                _ => unimplemented!(),
+            }),
+            _ => unimplemented!(),
         }
     }
 }
@@ -112,22 +108,17 @@ impl Flags {
 
         if !gab && !twitter && !minds {
             None
-        }
-        else {
-            Some(Flags {
-                gab,
-                twitter,
-                minds
-            })
+        } else {
+            Some(Flags { gab, twitter, minds })
         }
     }
 }
 
 #[derive(Debug)]
 pub struct Args {
-    ///Command to execute
+    /// Command to execute
     pub command: Commands,
-    pub flags: Flags
+    pub flags: Flags,
 }
 
 impl Args {
@@ -136,9 +127,6 @@ impl Args {
         let command = Commands::from_matches(matches.subcommand())?;
         let flags = Flags::from_matches(&matches).unwrap_or(platforms);
 
-        Ok(Args {
-            command,
-            flags
-        })
+        Ok(Args { command, flags })
     }
 }

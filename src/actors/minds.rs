@@ -1,30 +1,17 @@
 //! Actors to access Minds API
 
-extern crate futures;
 extern crate actix;
 extern crate actix_web;
+extern crate futures;
 
-use self::futures::{
-    future,
-    Future
-};
 use self::actix::prelude::*;
-use self::actix_web::HttpMessage;
 use self::actix_web::client::ClientRequest;
+use self::actix_web::HttpMessage;
+use self::futures::{future, Future};
 
-use ::config;
-use ::misc::{
-    ClientRequestBuilderExt,
-    ClientRequestExt
-};
-use super::messages::{
-    PostMessage,
-    ResultMessage,
-    UploadImage,
-    ResultImage,
-    PostFlags
-};
-
+use super::messages::{PostFlags, PostMessage, ResultImage, ResultMessage, UploadImage};
+use config;
+use misc::{ClientRequestBuilderExt, ClientRequestExt};
 
 mod payload {
     use super::PostFlags;
@@ -45,7 +32,7 @@ mod payload {
                 client_id: "",
                 client_secret: "",
                 username,
-                password
+                password,
             }
         }
     }
@@ -54,7 +41,7 @@ mod payload {
     pub struct Oauth2 {
         pub access_token: String,
         pub user_id: String,
-        pub refresh_token: String
+        pub refresh_token: String,
     }
 
     #[derive(Serialize, Debug)]
@@ -68,7 +55,7 @@ mod payload {
         url: Option<String>,
         attachment_guid: Option<String>,
         pub mature: u8,
-        access_id: u8
+        access_id: u8,
     }
 
     impl<'a> Post<'a> {
@@ -83,20 +70,20 @@ mod payload {
                 url: None,
                 attachment_guid,
                 mature: flags.nsfw as u8,
-                access_id: 2
+                access_id: 2,
             }
         }
     }
 
     #[derive(Deserialize, Debug)]
     pub struct UploadResponse {
-        pub guid: String
+        pub guid: String,
     }
 }
 
 pub struct Minds {
     config: Option<config::Minds>,
-    oauth2: Option<payload::Oauth2>
+    oauth2: Option<payload::Oauth2>,
 }
 
 impl Actor for Minds {
@@ -107,28 +94,30 @@ impl Actor for Minds {
         let config = self.config.take().unwrap();
         let mut req = ClientRequest::post(OAUTH2_URL);
         let req = req.set_default_headers()
-                     .json(payload::Auth::new(config.username, config.password))
-                     .map_err(|error| format!("Unable to serialize oauth2 request. Error: {}", error));
+            .json(payload::Auth::new(config.username, config.password))
+            .map_err(|error| format!("Unable to serialize oauth2 request. Error: {}", error));
 
         let req = match req {
             Ok(req) => req,
             Err(error) => {
                 eprintln!("Unable to serialize oauth2 request. Error: {}", error);
                 return ctx.stop();
-            }
+            },
         };
 
-        req.send_ext().into_actor(self).map_err(|error, _act, ctx| {
-            eprintln!("Minds oauth2 error: {}", error);
-            ctx.stop();
-        }).and_then(|rsp, act, _ctx| {
-            rsp.json().into_actor(act)
-                      .map(|oauth2, act, _ctx| act.oauth2 = Some(oauth2))
-                      .map_err(|error, _act, ctx| {
-                          eprintln!("Minds oauth2 parse error: {}", error);
-                          ctx.stop()
-                      })
-        }).wait(ctx);
+        req.send_ext()
+            .into_actor(self)
+            .map_err(|error, _act, ctx| {
+                eprintln!("Minds oauth2 error: {}", error);
+                ctx.stop();
+            })
+            .and_then(|rsp, act, _ctx| {
+                rsp.json().into_actor(act).map(|oauth2, act, _ctx| act.oauth2 = Some(oauth2)).map_err(|error, _act, ctx| {
+                    eprintln!("Minds oauth2 parse error: {}", error);
+                    ctx.stop()
+                })
+            })
+            .wait(ctx);
     }
 }
 
@@ -136,7 +125,7 @@ impl Minds {
     pub fn new(config: config::Minds) -> Self {
         Self {
             config: Some(config),
-            oauth2: None
+            oauth2: None,
         }
     }
 }
@@ -160,16 +149,17 @@ impl Handler<UploadImage> for Minds {
 
         let req = match req.set_default_headers().auth_bearer(&access_token).set_multipart_body(&name, &mime, &data) {
             Ok(req) => req,
-            Err(error) => return Box::new(future::err(error))
+            Err(error) => return Box::new(future::err(error)),
         };
 
-        let req = req.send_ext().map_err(|error| format!("Minds upload error: {}", error))
-                     .and_then(|response| match response.status().is_success() {
-                         true => Ok(response),
-                         false => Err(format!("Minds server returned error code {}", response.status())),
-                     })
-                     .and_then(|response| response.json().map_err(|error| format!("Minds upload reading error: {}", error)))
-                     .map(|response: payload::UploadResponse| ResultImage::Guid(response.guid));
+        let req = req.send_ext()
+            .map_err(|error| format!("Minds upload error: {}", error))
+            .and_then(|response| match response.status().is_success() {
+                true => Ok(response),
+                false => Err(format!("Minds server returned error code {}", response.status())),
+            })
+            .and_then(|response| response.json().map_err(|error| format!("Minds upload reading error: {}", error)))
+            .map(|response: payload::UploadResponse| ResultImage::Guid(response.guid));
 
         Box::new(req)
     }
@@ -177,7 +167,7 @@ impl Handler<UploadImage> for Minds {
 
 #[derive(Deserialize, Debug)]
 pub struct PostResponse {
-    pub guid: String
+    pub guid: String,
 }
 
 impl Handler<PostMessage> for Minds {
@@ -191,31 +181,30 @@ impl Handler<PostMessage> for Minds {
             None => return Box::new(future::err("Unable to send Minds request".to_string())),
         };
 
-        let PostMessage{flags, content, images} = msg;
+        let PostMessage { flags, content, images } = msg;
 
         let mut req = ClientRequest::post(POST_URL);
 
         let images = match images {
             Some(mut images) => images.drain(..).next().map(|image| image.guid()),
-            None => None
+            None => None,
         };
 
-        let req = req.set_default_headers()
-                     .auth_bearer(access_token)
-                     .json(payload::Post::new(&content, images, &flags));
+        let req = req.set_default_headers().auth_bearer(access_token).json(payload::Post::new(&content, images, &flags));
 
         let req = match req {
             Ok(req) => req,
-            Err(error) => return Box::new(future::err(format!("Minds post actix error: {}", error)))
+            Err(error) => return Box::new(future::err(format!("Minds post actix error: {}", error))),
         };
 
-        let req = req.send_ext().map_err(|error| format!("Minds post error: {}", error))
-                     .and_then(|response| match response.status().is_success() {
-                         true => Ok(response),
-                         false => Err(format!("Minds server returned error code {}", response.status())),
-                     })
-                     .and_then(|response| response.json::<PostResponse>().map_err(|error| format!("Minds post error: {}", error)))
-                     .map(|response| ResultMessage::Guid(response.guid));
+        let req = req.send_ext()
+            .map_err(|error| format!("Minds post error: {}", error))
+            .and_then(|response| match response.status().is_success() {
+                true => Ok(response),
+                false => Err(format!("Minds server returned error code {}", response.status())),
+            })
+            .and_then(|response| response.json::<PostResponse>().map_err(|error| format!("Minds post error: {}", error)))
+            .map(|response| ResultMessage::Guid(response.guid));
 
         Box::new(req)
     }

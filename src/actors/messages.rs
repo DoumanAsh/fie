@@ -1,14 +1,14 @@
 //! Describes common messages
-extern crate mime_guess;
 extern crate actix;
+extern crate mime_guess;
 
-use ::std::fmt;
-use ::std::rc::Rc;
-use ::io::Image;
+use io::Image;
+use std::fmt;
+use std::rc::Rc;
 
 use self::actix::prelude::*;
 
-///Performs upload of image
+/// Performs upload of image
 pub struct UploadImage(pub Rc<Image>);
 
 impl Message for UploadImage {
@@ -16,54 +16,54 @@ impl Message for UploadImage {
 }
 
 #[derive(Clone)]
-///Result of upload.
+/// Result of upload.
 pub enum ResultImage {
     Id(u64),
-    Guid(String)
+    Guid(String),
 }
 
 impl ResultImage {
     pub fn id(self) -> u64 {
         match self {
             ResultImage::Id(result) => result,
-            _ => panic!("Not an ID's type")
+            _ => panic!("Not an ID's type"),
         }
     }
 
     pub fn guid(self) -> String {
         match self {
             ResultImage::Guid(result) => result,
-            _ => panic!("Not an Guid's type")
+            _ => panic!("Not an Guid's type"),
         }
     }
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]
 pub struct PostFlags {
-    ///Whether it is safe for work or not.
+    /// Whether it is safe for work or not.
     #[serde(default)]
-    pub nsfw: bool
+    pub nsfw: bool,
 }
 
 #[derive(Clone)]
-///Posts message on social media
+/// Posts message on social media
 pub struct PostMessage {
-    ///Post's flags.
+    /// Post's flags.
     pub flags: PostFlags,
-    ///Message's text
+    /// Message's text
     pub content: String,
-    ///List of images to attach
-    pub images: Option<Vec<ResultImage>>
+    /// List of images to attach
+    pub images: Option<Vec<ResultImage>>,
 }
 
 impl Message for PostMessage {
     type Result = Result<ResultMessage, String>;
 }
 
-///Result's of message posting
+/// Result's of message posting
 pub enum ResultMessage {
     Id(u64),
-    Guid(String)
+    Guid(String),
 }
 
 impl fmt::Display for ResultMessage {

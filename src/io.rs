@@ -1,28 +1,15 @@
 extern crate memmap;
 extern crate mime_guess;
 
-use self::mime_guess::{
-    Mime,
-    guess_mime_type
-};
-use self::memmap::{
-    Mmap,
-    MmapOptions
-};
+use self::memmap::{Mmap, MmapOptions};
+use self::mime_guess::{guess_mime_type, Mime};
 
-use ::misc::ResultExt;
+use misc::ResultExt;
 
-use ::std::fs::{
-    File
-};
-use std::path::{
-    Path,
-};
-use ::std::io;
-use self::io::{
-    BufReader,
-    Read
-};
+use self::io::{BufReader, Read};
+use std::fs::File;
+use std::io;
+use std::path::Path;
 
 pub fn read_file_to_string<P: AsRef<Path>>(path: P) -> Result<String, String> {
     let file = File::open(path.as_ref()).format_err("Cannot open config file.")?;
@@ -49,11 +36,6 @@ impl Image {
         let name = path.as_ref().file_name().unwrap().to_string_lossy().to_string();
         let mime = guess_mime_type(path);
 
-        Ok(Image {
-            name,
-            mime,
-            file,
-            mmap
-        })
+        Ok(Image { name, mime, file, mmap })
     }
 }
