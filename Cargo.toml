@@ -33,3 +33,7 @@ cookie = "0"
 [profile.release]
 lto = true
 opt-level = 2
+
+[badges]
+appveyor = { repository = "DoumanAsh/fie", branch = "master", service = "github" }
+travis-ci = { repository = "DoumanAsh/fie", branch = "master" }
