@@ -1,14 +1,23 @@
 [package]
 name = "fie"
-version = "0.6.3"
+version = "0.7.0"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute twitter app."
-keywords = ["twitter"]
+keywords = ["twitter", "gab", "minds"]
 license = "Apache-2.0"
 readme = "README.md"
 
+[dependencies.actix-web]
+version = "0.5"
+default-features = false
+features = ["tls", "flate2-c"]
+
 [dependencies]
+memmap = "0.6"
+
+actix = "0.5"
+
 clap = "2"
 
 serde = "1"
@@ -17,10 +26,7 @@ toml = "0"
 serde_derive = "1"
 
 egg-mode = "0.12"
-tokio-core = "0.1"
 futures = "0.1"
-hyper = "0.11"
-hyper-tls = "0.*"
 mime_guess = "2.0.0-alpha.2"
 cookie = "0"
 
