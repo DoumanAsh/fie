@@ -20,7 +20,10 @@ impl<T, E: fmt::Display> ResultExt<T, E> for Result<T, E> {
     }
 }
 
-const TIMEOUT_S: u64 = 300;
+///Number of seconds to wait for connection
+const CONN_TIMEOUT_S: u64 = 5;
+///Number of seconds to wait for response
+const WAIT_TIMEOUT_S: u64 = 300;
 
 pub trait ClientRequestExt {
     fn send_ext(self) -> SendRequest;
@@ -28,9 +31,9 @@ pub trait ClientRequestExt {
 impl ClientRequestExt for ClientRequest {
     fn send_ext(self) -> SendRequest {
         self.send()
-            .timeout(time::Duration::new(TIMEOUT_S, 0))
-            .conn_timeout(time::Duration::new(TIMEOUT_S, 0))
-            .wait_timeout(time::Duration::new(TIMEOUT_S, 0))
+            .timeout(time::Duration::new(WAIT_TIMEOUT_S, 0))
+            .conn_timeout(time::Duration::new(CONN_TIMEOUT_S, 0))
+            .wait_timeout(time::Duration::new(WAIT_TIMEOUT_S, 0))
     }
 }
 
