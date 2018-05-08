@@ -83,7 +83,7 @@ mod payload {
 
 pub enum Minds {
     NotStarted(config::Minds),
-    Started(payload::Oauth2)
+    Started(payload::Oauth2),
 }
 
 impl Actor for Minds {
@@ -96,7 +96,7 @@ impl Actor for Minds {
             _ => {
                 eprintln!("Minds: internal error. Actor in a started state already");
                 return ctx.stop();
-            }
+            },
         };
 
         let mut req = ClientRequest::post(OAUTH2_URL);
@@ -119,10 +119,13 @@ impl Actor for Minds {
                 ctx.stop();
             })
             .and_then(|rsp, act, _ctx| {
-                rsp.json().into_actor(act).map(|oauth2, act, _ctx| *act = Minds::Started(oauth2)).map_err(|error, _act, ctx| {
-                    eprintln!("Minds oauth2 parse error: {}", error);
-                    ctx.stop()
-                })
+                rsp.json()
+                    .into_actor(act)
+                    .map(|oauth2, act, _ctx| *act = Minds::Started(oauth2))
+                    .map_err(|error, _act, ctx| {
+                        eprintln!("Minds oauth2 parse error: {}", error);
+                        ctx.stop()
+                    })
             })
             .wait(ctx);
     }
@@ -142,7 +145,7 @@ impl Handler<UploadImage> for Minds {
 
         let access_token = match self {
             &mut Minds::Started(ref oauth2) => &oauth2.access_token,
-            _ => return Box::new(future::err("Unable to send Minds request".to_string()))
+            _ => return Box::new(future::err("Unable to send Minds request".to_string())),
         };
 
         let name = &msg.0.name;
@@ -182,7 +185,7 @@ impl Handler<PostMessage> for Minds {
 
         let access_token = match self {
             &mut Minds::Started(ref oauth2) => &oauth2.access_token,
-            _ => return Box::new(future::err("Unable to send Minds request".to_string()))
+            _ => return Box::new(future::err("Unable to send Minds request".to_string())),
         };
 
         let PostMessage { flags, content, images } = msg;

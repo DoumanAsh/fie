@@ -97,9 +97,9 @@ impl Handler<Post> for API {
             message
         };
 
-        //this is post base's part.
-        //as each API accepts images in own format.
-        //we'll need set accordingly
+        // this is post base's part.
+        // as each API accepts images in own format.
+        // we'll need set accordingly
         let post = messages::PostMessage {
             flags,
             content: message,
