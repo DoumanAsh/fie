@@ -25,6 +25,7 @@ pub struct API {
     pub twitter: Option<Addr<Unsync, Twitter>>,
     pub gab: Option<Addr<Unsync, Gab>>,
     pub minds: Option<Addr<Unsync, Minds>>,
+    settings: config::Settings
 }
 
 impl API {
@@ -33,12 +34,13 @@ impl API {
             twitter: None,
             gab: None,
             minds: None,
+            settings: config::Settings::default()
         }
     }
 
     pub fn start_minds_if(mut self, cond: bool, minds: config::Minds) -> Self {
         if cond {
-            self.minds = Some(Minds::new(minds).start());
+            self.minds = Some(Minds::new(minds, self.settings.clone()).start());
         }
 
         self
@@ -46,7 +48,7 @@ impl API {
 
     pub fn start_gab_if(mut self, cond: bool, gab: config::Gab) -> Self {
         if cond {
-            self.gab = Some(Gab::new(gab).start());
+            self.gab = Some(Gab::new(gab, self.settings.clone()).start());
         }
 
         self

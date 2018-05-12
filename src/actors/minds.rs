@@ -81,9 +81,22 @@ mod payload {
     }
 }
 
-pub enum Minds {
+enum State {
     NotStarted(config::Minds),
     Started(payload::Oauth2),
+}
+pub struct Minds {
+    state: State,
+    settings: config::Settings
+}
+
+impl Minds {
+    pub fn new(config: config::Minds, settings: config::Settings) -> Self {
+        Self {
+            state: State::NotStarted(config),
+            settings
+        }
+    }
 }
 
 impl Actor for Minds {
@@ -91,8 +104,8 @@ impl Actor for Minds {
 
     fn started(&mut self, ctx: &mut Context<Self>) {
         const OAUTH2_URL: &'static str = "https://www.minds.com/oauth2/token";
-        let config = match self {
-            &mut Minds::NotStarted(ref config) => config,
+        let config = match &self.state {
+            &State::NotStarted(ref config) => config,
             _ => {
                 eprintln!("Minds: internal error. Actor in a started state already");
                 return ctx.stop();
@@ -112,7 +125,7 @@ impl Actor for Minds {
             },
         };
 
-        req.send_ext()
+        req.send_with_timeout(self.settings.timeout)
             .into_actor(self)
             .map_err(|error, _act, ctx| {
                 eprintln!("Minds oauth2 error: {}", error);
@@ -121,7 +134,7 @@ impl Actor for Minds {
             .and_then(|rsp, act, _ctx| {
                 rsp.json()
                     .into_actor(act)
-                    .map(|oauth2, act, _ctx| *act = Minds::Started(oauth2))
+                    .map(|oauth2, act, _ctx| (*act).state = State::Started(oauth2))
                     .map_err(|error, _act, ctx| {
                         eprintln!("Minds oauth2 parse error: {}", error);
                         ctx.stop()
@@ -131,20 +144,14 @@ impl Actor for Minds {
     }
 }
 
-impl Minds {
-    pub fn new(config: config::Minds) -> Self {
-        Minds::NotStarted(config)
-    }
-}
-
 impl Handler<UploadImage> for Minds {
     type Result = ResponseFuture<ResultImage, String>;
 
     fn handle(&mut self, msg: UploadImage, _: &mut Self::Context) -> Self::Result {
         const IMAGES_URL: &'static str = "https://www.minds.com/api/v1/media";
 
-        let access_token = match self {
-            &mut Minds::Started(ref oauth2) => &oauth2.access_token,
+        let access_token = match &self.state {
+            &State::Started(ref oauth2) => &oauth2.access_token,
             _ => return Box::new(future::err("Unable to send Minds request".to_string())),
         };
 
@@ -159,7 +166,7 @@ impl Handler<UploadImage> for Minds {
             Err(error) => return Box::new(future::err(error)),
         };
 
-        let req = req.send_ext()
+        let req = req.send_with_timeout(self.settings.timeout)
             .map_err(|error| format!("Minds upload error: {}", error))
             .and_then(|response| match response.status().is_success() {
                 true => Ok(response),
@@ -183,8 +190,8 @@ impl Handler<PostMessage> for Minds {
     fn handle(&mut self, msg: PostMessage, _: &mut Self::Context) -> Self::Result {
         const POST_URL: &'static str = "https://www.minds.com/api/v1/newsfeed";
 
-        let access_token = match self {
-            &mut Minds::Started(ref oauth2) => &oauth2.access_token,
+        let access_token = match &self.state {
+            &State::Started(ref oauth2) => &oauth2.access_token,
             _ => return Box::new(future::err("Unable to send Minds request".to_string())),
         };
 
@@ -204,7 +211,7 @@ impl Handler<PostMessage> for Minds {
             Err(error) => return Box::new(future::err(format!("Minds post actix error: {}", error))),
         };
 
-        let req = req.send_ext()
+        let req = req.send_with_timeout(self.settings.timeout)
             .map_err(|error| format!("Minds post error: {}", error))
             .and_then(|response| match response.status().is_success() {
                 true => Ok(response),

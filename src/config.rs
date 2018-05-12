@@ -53,10 +53,28 @@ pub struct Gab {
     /// You can get it after logging into gab.io and examining your HTTP requests.
     pub token: String,
 }
+
 #[derive(Deserialize, Debug)]
 pub struct Minds {
     pub username: String,
     pub password: String,
+}
+
+fn default_timeout() -> u64 { 5 }
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Settings {
+    #[serde(default = "default_timeout")]
+    ///Amount of settings to wait for all HTTP responses
+    pub timeout: u64,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            timeout: 5
+        }
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -66,6 +84,8 @@ pub struct Config {
     pub gab: Gab,
     pub twitter: Twitter,
     pub minds: Minds,
+    #[serde(default)]
+    pub settings: Settings
 }
 
 impl Config {

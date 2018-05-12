@@ -17,6 +17,7 @@ use misc::{ClientRequestBuilderExt, ClientRequestExt};
 /// Gab actor
 pub struct Gab {
     config: config::Gab,
+    settings: config::Settings
 }
 
 impl Actor for Gab {
@@ -26,8 +27,8 @@ impl Actor for Gab {
 }
 
 impl Gab {
-    pub fn new(config: config::Gab) -> Self {
-        Self { config }
+    pub fn new(config: config::Gab, settings: config::Settings) -> Self {
+        Self { config, settings }
     }
 }
 
@@ -53,7 +54,7 @@ impl Handler<UploadImage> for Gab {
             Err(error) => return Box::new(future::err(error)),
         };
 
-        let req = req.send_ext()
+        let req = req.send_with_timeout(self.settings.timeout)
             .map_err(|error| format!("Gab upload error: {}", error))
             .and_then(|response| match response.status().is_success() {
                 true => Ok(response),
@@ -134,7 +135,7 @@ impl Handler<PostMessage> for Gab {
             Err(error) => return Box::new(future::err(format!("Gab post actix error: {}", error))),
         };
 
-        let req = req.send_ext()
+        let req = req.send_with_timeout(self.settings.timeout)
             .map_err(|error| format!("Gab post error: {}", error))
             .and_then(|response| match response.status().is_success() {
                 true => Ok(response),

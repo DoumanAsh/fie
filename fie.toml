@@ -26,3 +26,9 @@ password = "password"
 minds = true
 gab = true
 twitter = true
+
+[settings]
+# Amount of seconds to wait for responses from API server.
+# All request fails when it exceeds this time
+# Default value is 5 seconds
+timeout = 5
