@@ -1,6 +1,6 @@
 [package]
 name = "fie"
-version = "0.7.1"
+version = "0.8.0"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute twitter app."
@@ -14,6 +14,11 @@ default-features = false
 features = ["tls", "flate2-c"]
 
 [dependencies]
+data-encoding = "2"
+percent-encoding = "1"
+rand = "0.5"
+ring = "0.13.0-alpha3"
+
 memmap = "0.6"
 
 actix = "0.5"
@@ -22,10 +27,10 @@ clap = "2"
 
 serde = "1"
 serde_json = "1"
+serde_urlencoded = "0"
 toml = "0"
 serde_derive = "1"
 
-egg-mode = "0.12"
 futures = "0.1"
 mime_guess = "2.0.0-alpha.2"
 cookie = "0"

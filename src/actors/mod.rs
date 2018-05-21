@@ -56,7 +56,7 @@ impl API {
 
     pub fn start_twitter_if(mut self, cond: bool, twitter: config::Twitter) -> Self {
         if cond {
-            self.twitter = Some(Twitter::new(twitter).start());
+            self.twitter = Some(Twitter::new(twitter, self.settings.clone()).start());
         }
 
         self
