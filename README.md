@@ -8,7 +8,14 @@ Small and cute social media CLI.
 
 ![Icon](icon.jpg)
 
-## Supported platforms:
+## Download links
+
+* Windows [32bit](https://github.com/DoumanAsh/fie/releases/download/0.8.0/fie-0.8.0-i686-pc-windows-msvc.zip)
+* Windows [64bit](https://github.com/DoumanAsh/fie/releases/download/0.8.0/fie-0.8.0-x86_64-pc-windows-msvc.zip)
+* Linux [64bit](https://github.com/DoumanAsh/fie/releases/download/0.8.0/fie-0.8.0-x86_64-unknown-linux-gnu.zip)
+* OSX [64bit](https://github.com/DoumanAsh/fie/releases/download/0.8.0/fie-0.8.0-x86_64-apple-darwin.zip)
+
+## Supported social platforms:
 
 * Gab (through unofficial API so may break);
 * Minds.com (through kinda official API);
