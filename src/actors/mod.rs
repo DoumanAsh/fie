@@ -25,7 +25,7 @@ pub struct API {
     pub twitter: Option<Addr<Unsync, Twitter>>,
     pub gab: Option<Addr<Unsync, Gab>>,
     pub minds: Option<Addr<Unsync, Minds>>,
-    settings: config::Settings
+    settings: config::Settings,
 }
 
 impl API {
@@ -34,7 +34,7 @@ impl API {
             twitter: None,
             gab: None,
             minds: None,
-            settings: config::Settings::default()
+            settings: config::Settings::default(),
         }
     }
 
@@ -56,7 +56,7 @@ impl API {
 
     pub fn start_twitter_if(mut self, cond: bool, twitter: config::Twitter) -> Self {
         if cond {
-            self.twitter = Some(Twitter::new(twitter).start());
+            self.twitter = Some(Twitter::new(twitter, self.settings.clone()).start());
         }
 
         self

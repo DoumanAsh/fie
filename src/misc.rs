@@ -20,7 +20,7 @@ impl<T, E: fmt::Display> ResultExt<T, E> for Result<T, E> {
     }
 }
 
-///Number of seconds to wait for connection
+/// Number of seconds to wait for connection
 const CONN_TIMEOUT_S: u64 = 5;
 
 pub trait ClientRequestExt {
