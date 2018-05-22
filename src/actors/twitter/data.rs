@@ -29,9 +29,14 @@ fn percent_encode(src: &str) -> impl Iterator<Item = &str> {
 use config;
 
 pub struct Oauth {
+    /// Contains percent encoded consumer's key
     consumer_key: String,
+    /// Contains percent encoded consumer and access token secrets
+    ///
+    /// It is used as seeding value for hmac generation of signature.
     signature_key: String,
     oauth_signature_method: &'static str,
+    /// Contains percent encoded access token's key
     oauth_token: String,
     oauth_version: &'static str,
 }
@@ -63,6 +68,10 @@ impl Oauth {
         }
     }
 
+    /// Returns Authorization header value
+    ///
+    /// The important thing here is signature which is
+    /// derived from method, uri and payload params.
     pub fn gen_auth(&self, method: &Method, uri: &str, params: HashMap<&str, &str>) -> String {
         use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -115,6 +124,13 @@ impl Oauth {
         header_value
     }
 
+    /// Generates Authorization's signature based on method, uri and params.
+    ///
+    /// Parameters are composed into single percent encoded string and
+    /// signed using HMAC-SHA1 algorithm
+    /// `signature_key` is used as seed to algorithm.
+    ///
+    /// Return base64 encoded string.
     fn signature(&self, method: &Method, uri: &str, params: Option<String>) -> String {
         use self::data_encoding::BASE64;
         use self::ring::{digest, hmac};

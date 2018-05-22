@@ -32,7 +32,7 @@ toml = "0"
 serde_derive = "1"
 
 futures = "0.1"
-mime_guess = "2.0.0-alpha.2"
+mime_guess = "2.0.0-alpha.4"
 cookie = "0"
 
 [profile.release]

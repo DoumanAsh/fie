@@ -39,9 +39,9 @@ impl Handler<UploadImage> for Twitter {
     type Result = ResponseFuture<ResultImage, String>;
 
     fn handle(&mut self, msg: UploadImage, _: &mut Self::Context) -> Self::Result {
+        const IMAGES_URL: &'static str = "https://upload.twitter.com/1.1/media/upload.json";
         use std::collections::HashMap;
 
-        const IMAGES_URL: &'static str = "https://upload.twitter.com/1.1/media/upload.json";
         let mut req = ClientRequest::post(IMAGES_URL);
         let media = data::Media::from_bytes(&msg.0.mmap[..]);
 
@@ -60,8 +60,8 @@ impl Handler<UploadImage> for Twitter {
             .header(http::header::AUTHORIZATION, auth_header)
             .header(http::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
             .content_length(media.as_bytes().len() as u64)
-            .body(media)
-            .map_err(|error| format!("Twitter upload creation error: {}", error));
+            .body(media);
+
         let req = match req {
             Ok(req) => req,
             Err(error) => return Box::new(future::err(format!("Twitter upload creation error: {}", error))),
@@ -84,8 +84,9 @@ impl Handler<PostMessage> for Twitter {
     type Result = ResponseFuture<ResultMessage, String>;
 
     fn handle(&mut self, msg: PostMessage, _: &mut Self::Context) -> Self::Result {
-        use std::collections::HashMap;
         const POST_URL: &'static str = "https://api.twitter.com/1.1/statuses/update.json";
+        use std::collections::HashMap;
+
         let PostMessage { flags, content, images } = msg;
 
         let images = match images {
@@ -121,8 +122,7 @@ impl Handler<PostMessage> for Twitter {
             .header(http::header::AUTHORIZATION, auth_header)
             .header(http::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
             .content_length(tweet.as_bytes().len() as u64)
-            .body(tweet)
-            .map_err(|error| format!("Twitter post creation error: {}", error));
+            .body(tweet);
 
         let req = match req {
             Ok(req) => req,
