@@ -7,6 +7,11 @@ description = "Small and cute twitter app."
 keywords = ["twitter", "gab", "minds"]
 license = "Apache-2.0"
 readme = "README.md"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+    "README.md"
+]
 
 [dependencies.actix-web]
 version = "0.6"

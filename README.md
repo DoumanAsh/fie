@@ -18,6 +18,8 @@ Small and cute social media CLI.
 
 Configuration file is placed in the same directory as executable.
 
+See [documentation](docs/configuration.md) on how to setup social medias
+
 Use [example](fie.toml) as reference.
 
 ## Usage
