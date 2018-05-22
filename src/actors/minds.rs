@@ -87,14 +87,14 @@ enum State {
 }
 pub struct Minds {
     state: State,
-    settings: config::Settings
+    settings: config::Settings,
 }
 
 impl Minds {
     pub fn new(config: config::Minds, settings: config::Settings) -> Self {
         Self {
             state: State::NotStarted(config),
-            settings
+            settings,
         }
     }
 }
@@ -170,7 +170,7 @@ impl Handler<UploadImage> for Minds {
             .map_err(|error| format!("Minds upload error: {}", error))
             .and_then(|response| match response.status().is_success() {
                 true => Ok(response),
-                false => Err(format!("Minds server returned error code {}", response.status())),
+                false => Err(format!("Minds upload server returned error code {}", response.status())),
             })
             .and_then(|response| response.json().map_err(|error| format!("Minds upload reading error: {}", error)))
             .map(|response: payload::UploadResponse| ResultImage::Guid(response.guid));
@@ -215,7 +215,7 @@ impl Handler<PostMessage> for Minds {
             .map_err(|error| format!("Minds post error: {}", error))
             .and_then(|response| match response.status().is_success() {
                 true => Ok(response),
-                false => Err(format!("Minds server returned error code {}", response.status())),
+                false => Err(format!("Minds post server returned error code {}", response.status())),
             })
             .and_then(|response| response.json::<PostResponse>().map_err(|error| format!("Minds post error: {}", error)))
             .map(|response| ResultMessage::Guid(response.guid));

@@ -1,12 +1,12 @@
 //! Twitter's data primitives.
-extern crate percent_encoding;
+extern crate actix_web;
 extern crate data_encoding;
+extern crate percent_encoding;
 extern crate rand;
 extern crate ring;
-extern crate actix_web;
 
-use self::percent_encoding::{EncodeSet, utf8_percent_encode};
 use self::actix_web::http::Method;
+use self::percent_encoding::{utf8_percent_encode, EncodeSet};
 use std::collections::HashMap;
 
 #[derive(Copy, Clone)]
@@ -15,26 +15,25 @@ struct TwitterEncodeSet;
 impl EncodeSet for TwitterEncodeSet {
     fn contains(&self, byte: u8) -> bool {
         match byte {
-            b'a' ... b'z' | b'A' ... b'Z' | b'0' ... b'9'
-                | b'-' | b'.' | b'_' | b'~' => false,
-            _ => true
+            b'a'...b'z' | b'A'...b'Z' | b'0'...b'9' | b'-' | b'.' | b'_' | b'~' => false,
+            _ => true,
         }
     }
 }
 
-///Encodes the given string slice for transmission to Twitter.
-fn percent_encode(src: &str) -> impl Iterator<Item=&str> {
+/// Encodes the given string slice for transmission to Twitter.
+fn percent_encode(src: &str) -> impl Iterator<Item = &str> {
     utf8_percent_encode(src, TwitterEncodeSet)
 }
 
-use ::config;
+use config;
 
 pub struct Oauth {
     consumer_key: String,
     signature_key: String,
     oauth_signature_method: &'static str,
     oauth_token: String,
-    oauth_version: &'static str
+    oauth_version: &'static str,
 }
 
 impl Oauth {
@@ -60,12 +59,12 @@ impl Oauth {
             oauth_token,
             oauth_version,
             oauth_signature_method,
-            signature_key
+            signature_key,
         }
     }
 
     pub fn gen_auth(&self, method: &Method, uri: &str, params: HashMap<&str, &str>) -> String {
-        use std::time::{UNIX_EPOCH, SystemTime};
+        use std::time::{SystemTime, UNIX_EPOCH};
 
         let nonce = Self::nonce();
 
@@ -84,21 +83,25 @@ impl Oauth {
             query_params.insert("oauth_version", self.oauth_version);
             query_params.insert("oauth_token", self.oauth_token.as_str());
 
-            let mut query = query_params.iter()
-                                        .map(|(k, v)| format!("{}={}", percent_encode(k).collect::<String>(), percent_encode(v).collect::<String>()))
-                                        .collect::<Vec<_>>();
+            let mut query = query_params
+                .iter()
+                .map(|(k, v)| format!("{}={}", percent_encode(k).collect::<String>(), percent_encode(v).collect::<String>()))
+                .collect::<Vec<_>>();
             query.sort();
             query.join("&")
         };
 
         let signature = self.signature(method, uri, Some(signature_params));
         let mut header_value = String::new();
-        header_value.push_str("oauth_consumer_key=\"");
+        header_value.push_str("OAuth");
+        header_value.push_str(" oauth_consumer_key=\"");
         header_value.push_str(self.consumer_key.as_str());
         header_value.push_str("\", oauth_nonce=\"");
         header_value.push_str(nonce.as_str());
         header_value.push_str("\", oauth_signature=\"");
-        header_value.push_str(signature.as_str());
+        for ch in percent_encode(&signature) {
+            header_value.push_str(ch);
+        }
         header_value.push_str("\", oauth_signature_method=\"");
         header_value.push_str(self.oauth_signature_method);
         header_value.push_str("\", oauth_timestamp=\"");
@@ -113,7 +116,7 @@ impl Oauth {
     }
 
     fn signature(&self, method: &Method, uri: &str, params: Option<String>) -> String {
-        use self::data_encoding::{BASE64};
+        use self::data_encoding::BASE64;
         use self::ring::{digest, hmac};
 
         let key = hmac::SigningKey::new(&digest::SHA1, self.signature_key.as_bytes());
@@ -139,7 +142,7 @@ impl Oauth {
     }
 
     fn nonce() -> String {
-        use self::rand::{thread_rng, distributions, Rng};
+        use self::rand::{distributions, thread_rng, Rng};
 
         thread_rng().sample_iter(&distributions::Alphanumeric).take(32).collect()
     }
@@ -147,12 +150,12 @@ impl Oauth {
 
 #[derive(Serialize, Debug)]
 pub struct Media {
-    pub media_data: String
+    pub media_data: String,
 }
 
 impl Media {
     pub fn from_bytes(bytes: &[u8]) -> Self {
-        use self::data_encoding::{BASE64};
+        use self::data_encoding::BASE64;
         let media_data = BASE64.encode(bytes);
         Self { media_data }
     }
@@ -160,22 +163,22 @@ impl Media {
 
 #[derive(Deserialize, Debug)]
 pub struct MediaResponse {
-    pub media_id: u64
+    pub media_id: u64,
 }
 
 #[derive(Serialize, Debug)]
-pub struct Tweet<'a> {
+pub struct Tweet {
     pub status: String,
-    pub media_ids: Option<&'a [u64]>,
-    pub possibly_sensitive: bool
+    pub media_ids: Option<String>,
+    pub possibly_sensitive: bool,
 }
 
-impl<'a> Tweet<'a> {
+impl Tweet {
     pub fn new(status: String) -> Self {
         Self {
             status,
             media_ids: None,
-            possibly_sensitive: false
+            possibly_sensitive: false,
         }
     }
 
@@ -184,24 +187,16 @@ impl<'a> Tweet<'a> {
         self
     }
 
-    pub fn media_ids(mut self, ids: &'a [u64]) -> Self {
-        self.media_ids = Some(ids);
+    pub fn media_ids(mut self, ids: &[u64]) -> Self {
+        if !ids.is_empty() {
+            let ids = ids.iter().map(|id| id.to_string()).collect::<Vec<String>>().join(",");
+            self.media_ids = Some(ids);
+        }
         self
     }
 }
 
 #[derive(Deserialize, Debug)]
 pub struct TweetResponse {
-    pub id: u64
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Error {
-    pub message: String,
-    pub code: usize,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Errors {
-    pub errors: Vec<Error>
+    pub id: u64,
 }

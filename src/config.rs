@@ -60,20 +60,20 @@ pub struct Minds {
     pub password: String,
 }
 
-fn default_timeout() -> u64 { 5 }
+fn default_timeout() -> u64 {
+    5
+}
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Settings {
     #[serde(default = "default_timeout")]
-    ///Amount of settings to wait for all HTTP responses
+    /// Amount of settings to wait for all HTTP responses
     pub timeout: u64,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self {
-            timeout: 5
-        }
+        Self { timeout: 5 }
     }
 }
 
@@ -85,7 +85,7 @@ pub struct Config {
     pub twitter: Twitter,
     pub minds: Minds,
     #[serde(default)]
-    pub settings: Settings
+    pub settings: Settings,
 }
 
 impl Config {

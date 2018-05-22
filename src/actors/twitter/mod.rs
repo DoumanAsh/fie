@@ -1,12 +1,12 @@
 //! Actors to access twitter API
-extern crate serde_urlencoded;
 extern crate actix;
 extern crate actix_web;
 extern crate futures;
+extern crate serde_urlencoded;
 
+use self::actix::prelude::*;
 use self::actix_web::client::ClientRequest;
 use self::actix_web::{http, HttpMessage};
-use self::actix::prelude::*;
 use self::futures::{future, Future};
 
 use super::messages::{PostMessage, ResultImage, ResultMessage, UploadImage};
@@ -18,7 +18,7 @@ mod data;
 /// Twitter actor
 pub struct Twitter {
     oauth: data::Oauth,
-    settings: config::Settings
+    settings: config::Settings,
 }
 
 impl Actor for Twitter {
@@ -31,7 +31,7 @@ impl Twitter {
     pub fn new(config: config::Twitter, settings: config::Settings) -> Self {
         let oauth = data::Oauth::new(config);
 
-        Self {oauth, settings}
+        Self { oauth, settings }
     }
 }
 
@@ -57,24 +57,24 @@ impl Handler<UploadImage> for Twitter {
         };
 
         let req = req.set_default_headers()
-                     .header(http::header::AUTHORIZATION, auth_header)
-                     .header(http::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
-                     .content_length(media.as_bytes().len() as u64)
-                     .body(media)
-                     .map_err(|error| format!("Twitter upload creation error: {}", error));
+            .header(http::header::AUTHORIZATION, auth_header)
+            .header(http::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .content_length(media.as_bytes().len() as u64)
+            .body(media)
+            .map_err(|error| format!("Twitter upload creation error: {}", error));
         let req = match req {
             Ok(req) => req,
             Err(error) => return Box::new(future::err(format!("Twitter upload creation error: {}", error))),
         };
 
         let req = req.send_with_timeout(self.settings.timeout)
-                     .map_err(|error| format!("Twitter upload error: {}", error))
-                     .and_then(|response| match response.status().is_success() {
-                         true => Ok(response),
-                         false => Err(format!("Twitter server returned error code {}", response.status())),
-                     })
-                     .and_then(|response| response.json().map_err(|error| format!("Twitter upload reading error: {}", error)))
-                     .map(|response: data::MediaResponse| ResultImage::Id(response.media_id));
+            .map_err(|error| format!("Twitter upload error: {}", error))
+            .and_then(|response| match response.status().is_success() {
+                true => Ok(response),
+                false => Err(format!("Twitter upload server returned error code {}", response.status())),
+            })
+            .and_then(|response| response.json().map_err(|error| format!("Twitter upload reading error: {}", error)))
+            .map(|response: data::MediaResponse| ResultImage::Id(response.media_id));
 
         Box::new(req)
     }
@@ -96,61 +96,47 @@ impl Handler<PostMessage> for Twitter {
         let tweet = data::Tweet::new(content).nsfw(flags.nsfw);
         let tweet = match images.as_ref() {
             Some(images) => tweet.media_ids(&images),
-            None => tweet
+            None => tweet,
         };
 
         let auth_header = {
-            if let Some(media_ids) = tweet.media_ids.as_ref() {
-                let mut media_param = media_ids.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(",");
-                let mut auth_params = HashMap::new();
-                auth_params.insert("status", tweet.status.as_str());
-                match tweet.possibly_sensitive {
-                    true => auth_params.insert("possibly_sensitive", "true"),
-                    false => auth_params.insert("possibly_sensitive", "false"),
-                };
-                auth_params.insert("media_ids", media_param.as_str());
-                self.oauth.gen_auth(&http::Method::POST, POST_URL, auth_params)
+            let mut auth_params = HashMap::new();
+            auth_params.insert("status", tweet.status.as_str());
+            match tweet.possibly_sensitive {
+                true => auth_params.insert("possibly_sensitive", "true"),
+                false => auth_params.insert("possibly_sensitive", "false"),
+            };
+            if let Some(ids) = tweet.media_ids.as_ref() {
+                auth_params.insert("media_ids", ids);
             }
-            else {
-                let mut auth_params = HashMap::new();
-                auth_params.insert("status", tweet.status.as_str());
-                match tweet.possibly_sensitive {
-                    true => auth_params.insert("possibly_sensitive", "true"),
-                    false => auth_params.insert("possibly_sensitive", "false"),
-                };
-                self.oauth.gen_auth(&http::Method::POST, POST_URL, auth_params)
-            }
+            self.oauth.gen_auth(&http::Method::POST, POST_URL, auth_params)
         };
-
-        println!("auth_header={}", &auth_header);
 
         let tweet = match serde_urlencoded::to_string(tweet) {
             Ok(tweet) => tweet,
             Err(error) => return Box::new(future::err(format!("Twitter encoding error: {}", error))),
         };
 
-        println!("tweet payload={}", &tweet);
-
         let req = req.set_default_headers()
-                     .header(http::header::AUTHORIZATION, auth_header)
-                     .header(http::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
-                     .content_length(tweet.as_bytes().len() as u64)
-                     .body(tweet)
-                     .map_err(|error| format!("Twitter post creation error: {}", error));
+            .header(http::header::AUTHORIZATION, auth_header)
+            .header(http::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .content_length(tweet.as_bytes().len() as u64)
+            .body(tweet)
+            .map_err(|error| format!("Twitter post creation error: {}", error));
+
         let req = match req {
             Ok(req) => req,
             Err(error) => return Box::new(future::err(format!("Twitter post creation error: {}", error))),
         };
 
-        //TODO: Check why fails
         let req = req.send_with_timeout(self.settings.timeout)
-                     .map_err(|error| format!("Twitter post error: {}", error))
-                     .and_then(|response| match response.status().is_success() {
-                         true => Ok(response),
-                         false => Err(format!("Twitter post server returned error code {}", response.status())),
-                     })
-                     .and_then(|response| response.json().map_err(|error| format!("Twitter post reading error: {}", error)))
-                     .map(|response: data::TweetResponse| ResultMessage::Id(response.id));
+            .map_err(|error| format!("Twitter post error: {}", error))
+            .and_then(|response| match response.status().is_success() {
+                true => Ok(response),
+                false => Err(format!("Twitter post server returned error code {}", response.status())),
+            })
+            .and_then(|response| response.json().map_err(|error| format!("Twitter post reading error: {}", error)))
+            .map(|response: data::TweetResponse| ResultMessage::Id(response.id));
 
         Box::new(req)
     }
