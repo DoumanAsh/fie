@@ -17,7 +17,7 @@ fn run() -> Result<i32, String> {
     match args.command {
         cli::Commands::Post(post) => {
             let mut system = actix::System::new("fie");
-            let api: actix::Addr<actix::Unsync, _> = actors::API::new()
+            let api: actix::Addr<actix::Unsync, _> = actors::API::new(config.settings)
                 .start_minds_if(args.flags.minds, config.minds)
                 .start_gab_if(args.flags.gab, config.gab)
                 .start_twitter_if(args.flags.twitter, config.twitter)
@@ -28,7 +28,7 @@ fn run() -> Result<i32, String> {
         cli::Commands::Batch(exec) => match exec.post {
             Some(posts) => {
                 let mut system = actix::System::new("fie");
-                let api: actix::Addr<actix::Unsync, _> = actors::API::new()
+                let api: actix::Addr<actix::Unsync, _> = actors::API::new(config.settings)
                     .start_minds_if(args.flags.minds, config.minds)
                     .start_gab_if(args.flags.gab, config.gab)
                     .start_twitter_if(args.flags.twitter, config.twitter)

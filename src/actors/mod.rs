@@ -29,12 +29,12 @@ pub struct API {
 }
 
 impl API {
-    pub fn new() -> Self {
+    pub fn new(settings: config::Settings) -> Self {
         Self {
             twitter: None,
             gab: None,
             minds: None,
-            settings: config::Settings::default(),
+            settings,
         }
     }
 
