@@ -139,7 +139,7 @@ impl Handler<PostMessage> for Gab {
             .map_err(|error| format!("Gab post error: {}", error))
             .and_then(|response| match response.status().is_success() {
                 true => Ok(response),
-                false => Err(format!("Gab upload server returned error code {}", response.status())),
+                false => Err(format!("Gab post server returned error code {}", response.status())),
             })
             .and_then(|response| response.json::<PostResponse>().map_err(|error| format!("Gab post error: {}", error)))
             .map(|response| ResultMessage::Id(response.post.id));
