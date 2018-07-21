@@ -2,7 +2,7 @@
 extern crate actix;
 extern crate futures;
 
-use std::rc::Rc;
+use std::sync::Arc;
 
 use self::actix::prelude::*;
 use self::futures::{future, Future};
@@ -22,9 +22,9 @@ use io;
 
 /// United API Actor
 pub struct API {
-    pub twitter: Option<Addr<Unsync, Twitter>>,
-    pub gab: Option<Addr<Unsync, Gab>>,
-    pub minds: Option<Addr<Unsync, Minds>>,
+    pub twitter: Option<Addr<Twitter>>,
+    pub gab: Option<Addr<Gab>>,
+    pub minds: Option<Addr<Minds>>,
     settings: config::Settings,
 }
 
@@ -114,7 +114,7 @@ impl Handler<Post> for API {
                     let mut result = vec![];
                     for image in images {
                         match io::Image::open(image) {
-                            Ok(image) => result.push(Rc::new(image)),
+                            Ok(image) => result.push(Arc::new(image)),
                             Err(error) => {
                                 eprintln!("Error opening image '{}': {}", image, error);
                                 return Box::new(future::ok(()));
@@ -136,7 +136,7 @@ impl Handler<Post> for API {
                             tweet_images.push(upload_img)
                         }
 
-                        let self_addr: Addr<Unsync, _> = ctx.address();
+                        let self_addr = ctx.address();
 
                         let mut post = post.clone();
                         let tweet_upload = future::join_all(tweet_images).map_err(|error| eprintln!("{}", error));
@@ -180,7 +180,7 @@ impl Handler<Post> for API {
                             _ => eprintln!("Minds.com accepts only one attachment, only first image will be attached"),
                         }
 
-                        let self_addr: Addr<Unsync, _> = ctx.address();
+                        let self_addr = ctx.address();
 
                         let mut post = post.clone();
                         let image = unsafe { images.get_unchecked(0).clone() };
@@ -221,7 +221,7 @@ impl Handler<Post> for API {
                             gab_images.push(upload_img)
                         }
 
-                        let self_addr: Addr<Unsync, _> = ctx.address();
+                        let self_addr = ctx.address();
 
                         let mut post = post;
                         let gab_upload = future::join_all(gab_images).map_err(|error| eprintln!("{}", error));

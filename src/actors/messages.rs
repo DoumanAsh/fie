@@ -4,12 +4,12 @@ extern crate mime_guess;
 
 use io::Image;
 use std::fmt;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use self::actix::prelude::*;
 
 /// Performs upload of image
-pub struct UploadImage(pub Rc<Image>);
+pub struct UploadImage(pub Arc<Image>);
 
 impl Message for UploadImage {
     type Result = Result<ResultImage, String>;
