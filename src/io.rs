@@ -6,15 +6,13 @@ use self::mime_guess::{guess_mime_type, Mime};
 
 use misc::ResultExt;
 
-use self::io::{BufReader, Read};
+use self::io::Read;
 use std::fs::File;
 use std::io;
 use std::path::Path;
 
 pub fn read_file_to_string<P: AsRef<Path>>(path: P) -> Result<String, String> {
-    let file = File::open(path.as_ref()).format_err("Cannot open config file.")?;
-    let mut file = BufReader::new(file);
-
+    let mut file = File::open(path.as_ref()).format_err("Cannot open config file.")?;
     let mut buffer = String::new();
     file.read_to_string(&mut buffer).format_err("Unable to read config file.")?;
 
