@@ -1,6 +1,7 @@
 use config;
 use data::PostFlags;
-use http::{header, multipart, AutoClient, AutoRuntime, Future, Mime, Request};
+use http;
+use http::{header, multipart, AutoClient, AutoRuntime, Future, IntoFuture, Mime, Request};
 
 const LOGIN_URL: &'static str = "https://gab.ai/auth/login";
 const IMAGES_URL: &'static str = "https://gab.ai/api/media-attachments/images";
@@ -105,7 +106,10 @@ impl Gab {
 
         let req = Request::post(url).expect("To create request").multipart(form).send();
 
-        req.map_err(|error| eprintln!("Gab: uploading image Error={:?}", error))
+        // For image we wait twice of time
+        // just to be sure
+        req.or_else(|resp| resp.retry(http::get_timeout()).into_future().flatten())
+            .map_err(|error| eprintln!("Gab: uploading image Error={:?}", error))
             .and_then(|resp| match resp.is_success() {
                 true => Ok(resp),
                 false => {

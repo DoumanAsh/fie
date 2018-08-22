@@ -20,7 +20,12 @@ impl API {
     pub fn new(settings: config::Settings) -> Self {
         http::init(&settings);
 
-        Self { twitter: None, gab: None, minds: None, settings }
+        Self {
+            twitter: None,
+            gab: None,
+            minds: None,
+            settings,
+        }
     }
 
     pub fn start_twitter_if(mut self, cond: bool, twitter: config::Twitter) -> Self {
@@ -112,7 +117,9 @@ impl API {
                         uploads.push(Box::new(upload));
                     }
 
-                    let uploads = future::join_all(uploads).and_then(move |uploads| twitter.post(&message, &uploads, &flags));
+                    let uploads = future::join_all(uploads)
+                        .and_then(move |uploads| twitter.post(&message, &uploads, &flags))
+                        .or_else(|_| Ok(()));
 
                     jobs.push(Box::new(uploads));
                 }
@@ -124,7 +131,7 @@ impl API {
                         uploads.push(Box::new(upload));
                     }
 
-                    let uploads = future::join_all(uploads).and_then(move |uploads| gab.post(&message, &uploads, &flags));
+                    let uploads = future::join_all(uploads).and_then(move |uploads| gab.post(&message, &uploads, &flags)).or_else(|_| Ok(()));
 
                     jobs.push(Box::new(uploads));
                 }
@@ -138,22 +145,22 @@ impl API {
 
                     let image = unsafe { images.get_unchecked(0).clone() };
                     let image = minds.upload_image(&image.name, &image.mime, &image.mmap[..]);
-                    let upload = image.and_then(move |image| minds.post(&message, Some(image), &flags));
+                    let upload = image.and_then(move |image| minds.post(&message, Some(image), &flags)).or_else(|_| Ok(()));
 
                     jobs.push(Box::new(upload));
                 }
             },
             _ => {
                 if let Some(ref twitter) = self.twitter {
-                    let post = twitter.post(&message, &[], &flags);
+                    let post = twitter.post(&message, &[], &flags).or_else(|_| Ok(()));
                     jobs.push(Box::new(post));
                 }
                 if let Some(ref gab) = self.gab {
-                    let post = gab.post(&message, &[], &flags);
+                    let post = gab.post(&message, &[], &flags).or_else(|_| Ok(()));
                     jobs.push(Box::new(post));
                 }
                 if let Some(ref minds) = self.minds {
-                    let post = minds.post(&message, None, &flags);
+                    let post = minds.post(&message, None, &flags).or_else(|_| Ok(()));
                     jobs.push(Box::new(post));
                 }
             },

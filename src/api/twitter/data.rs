@@ -4,7 +4,7 @@ extern crate percent_encoding;
 extern crate rand;
 extern crate ring;
 
-use ::http::Method;
+use http::Method;
 
 use self::percent_encoding::{utf8_percent_encode, EncodeSet};
 use std::collections::HashMap;

@@ -1,7 +1,7 @@
 use config;
 use data::PostFlags;
-use http::{multipart, AutoClient, AutoRuntime, IntoFuture, Future, Mime, Request};
-use ::http;
+use http;
+use http::{multipart, AutoClient, AutoRuntime, Future, IntoFuture, Mime, Request};
 
 const OAUTH2_URL: &'static str = "https://www.minds.com/oauth2/token";
 const IMAGES_URL: &'static str = "https://www.minds.com/api/v1/media";
@@ -69,18 +69,18 @@ impl Minds {
             .expect("To serialzie post data")
             .send();
 
-        //For image we wait twice of time
-        //just to be sure
+        // For image we wait twice of time
+        // just to be sure
         req.or_else(|resp| resp.retry(http::get_timeout()).into_future().flatten())
-           .map_err(|error| eprintln!("Minds: post error. Error={:?}", error))
-           .and_then(|resp| match resp.is_success() {
+            .map_err(|error| eprintln!("Minds: post error. Error={:?}", error))
+            .and_then(|resp| match resp.is_success() {
                 true => Ok(resp),
                 false => {
                     eprintln!("Minds: failed to post. Status code={}", resp.status());
                     Err(())
                 },
             }).and_then(|resp| resp.json::<UploadResponse>().map_err(|error| eprintln!("Minds: Invalid response. Error={:?}", error)))
-           .map(|resp| println!("Minds(id={}) OK", resp.guid))
+            .map(|resp| println!("Minds(id={}) OK", resp.guid))
     }
 }
 

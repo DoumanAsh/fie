@@ -6,11 +6,11 @@ pub use self::yukikaze::client::request::multipart;
 pub use self::yukikaze::client::request::Builder;
 pub use self::yukikaze::client::Request;
 pub use self::yukikaze::futures;
-pub use self::yukikaze::futures::{IntoFuture, Future};
+pub use self::yukikaze::futures::{Future, IntoFuture};
 pub use self::yukikaze::header;
+pub use self::yukikaze::http::Method;
 pub use self::yukikaze::mime::Mime;
 pub use self::yukikaze::rt::{AutoClient, AutoRuntime};
-pub use self::yukikaze::http::Method;
 
 use config::Settings;
 
