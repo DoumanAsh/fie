@@ -1,7 +1,7 @@
-# HTTP Authorization Bearer token
-# Can be found through browser inspector when you're logged into gab.ai
+# Login and password from Gab.ai
 [gab]
-token = "fill your token"
+username = "username"
+password = "password"
 
 # Consumer Token of twitter app
 [twitter.consumer]

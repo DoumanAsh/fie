@@ -1,6 +1,6 @@
 [package]
 name = "fie"
-version = "0.8.2"
+version = "0.9.0"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute twitter app."
@@ -13,10 +13,10 @@ include = [
     "README.md"
 ]
 
-[dependencies.actix-web]
-version = "0.7"
+[dependencies.yukikaze]
+version = "0.1"
 default-features = false
-features = ["tls", "flate2-c"]
+features = ["rt", "flate2-c"]
 
 [dependencies]
 data-encoding = "2"
@@ -26,21 +26,16 @@ ring = "0.13"
 
 memmap = "0.6"
 
-futures = "0.1"
-actix = "0.7"
-
 clap = "2"
 
 serde = "1"
-serde_json = "1"
-serde_urlencoded = "0"
 toml = "0"
 serde_derive = "1"
 mime_guess = "2.0.0-alpha.6"
 
 [profile.release]
 lto = true
-opt-level = 2
+opt-level = "z"
 
 [badges]
 appveyor = { repository = "DoumanAsh/fie", branch = "master", service = "github" }

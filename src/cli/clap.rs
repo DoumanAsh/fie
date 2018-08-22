@@ -32,8 +32,7 @@ fn post_command() -> App<'static, 'static> {
                 .number_of_values(1)
                 .multiple(true)
                 .help("Adds hashtag at the last line of post."),
-        )
-        .arg(arg("image").short("i").multiple(true).takes_value(true).help("Adds image to post. Normally up to 4."))
+        ).arg(arg("image").short("i").multiple(true).takes_value(true).help("Adds image to post. Normally up to 4."))
         .arg(flag("nsfw").help("Whether post is NSFW or not."))
 }
 

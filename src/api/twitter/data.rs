@@ -1,11 +1,11 @@
 //! Twitter's data primitives.
-extern crate actix_web;
 extern crate data_encoding;
 extern crate percent_encoding;
 extern crate rand;
 extern crate ring;
 
-use self::actix_web::http::Method;
+use ::http::Method;
+
 use self::percent_encoding::{utf8_percent_encode, EncodeSet};
 use std::collections::HashMap;
 
@@ -183,14 +183,14 @@ pub struct MediaResponse {
 }
 
 #[derive(Serialize, Debug)]
-pub struct Tweet {
-    pub status: String,
+pub struct Tweet<'a> {
+    pub status: &'a str,
     pub media_ids: Option<String>,
     pub possibly_sensitive: bool,
 }
 
-impl Tweet {
-    pub fn new(status: String) -> Self {
+impl<'a> Tweet<'a> {
+    pub fn new(status: &'a str) -> Self {
         Self {
             status,
             media_ids: None,

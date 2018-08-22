@@ -2,8 +2,8 @@ extern crate toml;
 
 use std::convert;
 
-use actors::messages::PostFlags;
 use config::Platforms;
+use data::PostFlags;
 use io;
 use misc::ResultExt;
 

@@ -48,10 +48,10 @@ pub struct Twitter {
 /// Gab configuration.
 #[derive(Deserialize, Debug)]
 pub struct Gab {
-    /// Token to use for authorization.
-    ///
-    /// You can get it after logging into gab.io and examining your HTTP requests.
-    pub token: String,
+    #[serde(default)]
+    pub username: String,
+    #[serde(default)]
+    pub password: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -67,7 +67,7 @@ fn default_timeout() -> u64 {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Settings {
     #[serde(default = "default_timeout")]
-    /// Amount of settings to wait for all HTTP responses
+    /// Amount of seconds to wait for all HTTP responses
     pub timeout: u64,
 }
 

@@ -1,12 +1,11 @@
 #[macro_use]
 extern crate serde_derive;
-extern crate actix;
 
-use actix::Actor;
-
-mod actors;
+mod api;
 mod cli;
 mod config;
+mod data;
+mod http;
 mod io;
 mod misc;
 
@@ -16,26 +15,23 @@ fn run() -> Result<i32, String> {
 
     match args.command {
         cli::Commands::Post(post) => {
-            let mut system = actix::System::new("fie");
-            let api = actors::API::new(config.settings)
-                .start_minds_if(args.flags.minds, config.minds)
+            let api = api::API::new(config.settings)
                 .start_gab_if(args.flags.gab, config.gab)
-                .start_twitter_if(args.flags.twitter, config.twitter)
-                .start();
+                .start_minds_if(args.flags.minds, config.minds)
+                .start_twitter_if(args.flags.twitter, config.twitter);
 
-            let _ = system.block_on(api.send(post));
+            api.send(post);
         },
         cli::Commands::Batch(exec) => match exec.post {
             Some(posts) => {
-                let mut system = actix::System::new("fie");
-                let api = actors::API::new(config.settings)
-                    .start_minds_if(args.flags.minds, config.minds)
+                let api = api::API::new(config.settings)
                     .start_gab_if(args.flags.gab, config.gab)
-                    .start_twitter_if(args.flags.twitter, config.twitter)
-                    .start();
+                    .start_minds_if(args.flags.minds, config.minds)
+                    .start_twitter_if(args.flags.twitter, config.twitter);
+
                 for (idx, post) in posts.into_iter().enumerate() {
                     println!(">>>Post #{}", idx + 1);
-                    let _ = system.block_on(api.send(post));
+                    api.send(post);
                 }
             },
             None => (),

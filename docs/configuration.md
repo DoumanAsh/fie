@@ -11,16 +11,12 @@ password = "password"
 
 ## Gab
 
-Currently requires you to use token
-
+Just provide your password and login
 ```toml
 [gab]
-token = "fill your token"
+username = "username"
+password = "password"
 ```
-
-In order to get it you need to login in Gab.ai
-and use developer console to retrieve it from `Authorization` header.
-[![Gab.ai dev console screenshot](gab_dev_console.png)](gab_dev_console.png)
 
 ## Twitter
 
