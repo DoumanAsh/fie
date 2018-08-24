@@ -50,15 +50,18 @@ impl Minds {
 
         let req = Request::post(IMAGES_URL).expect("To create request").bearer_auth(&self.token).multipart(form).send();
 
-        req.map_err(|error| eprintln!("Minds: uploading image Error={:?}", error))
-            .and_then(|resp| match resp.is_success() {
-                true => Ok(resp),
-                false => {
-                    eprintln!("Minds: failed to upload image. Status code={}", resp.status());
-                    Err(())
-                },
-            }).and_then(|response| response.json::<UploadResponse>().map_err(|error| eprintln!("Minds upload reading error: {:?}", error)))
-            .map(|response| response.guid)
+        // For image we wait twice of time
+        // just to be sure
+        req.or_else(|resp| resp.retry(http::get_timeout()).into_future().flatten())
+           .map_err(|error| eprintln!("Minds: uploading image Error={:?}", error))
+           .and_then(|resp| match resp.is_success() {
+               true => Ok(resp),
+               false => {
+                   eprintln!("Minds: failed to upload image. Status code={}", resp.status());
+                   Err(())
+               },
+           }).and_then(|response| response.json::<UploadResponse>().map_err(|error| eprintln!("Minds upload reading error: {:?}", error)))
+           .map(|response| response.guid)
     }
 
     pub fn post(&self, message: &str, media_attachments: Option<String>, flags: &PostFlags) -> impl Future<Item = (), Error = ()> {
@@ -69,18 +72,15 @@ impl Minds {
             .expect("To serialzie post data")
             .send();
 
-        // For image we wait twice of time
-        // just to be sure
-        req.or_else(|resp| resp.retry(http::get_timeout()).into_future().flatten())
-            .map_err(|error| eprintln!("Minds: post error. Error={:?}", error))
-            .and_then(|resp| match resp.is_success() {
-                true => Ok(resp),
-                false => {
-                    eprintln!("Minds: failed to post. Status code={}", resp.status());
-                    Err(())
-                },
-            }).and_then(|resp| resp.json::<UploadResponse>().map_err(|error| eprintln!("Minds: Invalid response. Error={:?}", error)))
-            .map(|resp| println!("Minds(id={}) OK", resp.guid))
+        req.map_err(|error| eprintln!("Minds: post error. Error={:?}", error))
+           .and_then(|resp| match resp.is_success() {
+               true => Ok(resp),
+               false => {
+                   eprintln!("Minds: failed to post. Status code={}", resp.status());
+                   Err(())
+               },
+           }).and_then(|resp| resp.json::<UploadResponse>().map_err(|error| eprintln!("Minds: Invalid response. Error={:?}", error)))
+           .map(|resp| println!("Minds(id={}) OK", resp.guid))
     }
 }
 

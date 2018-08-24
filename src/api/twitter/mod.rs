@@ -83,6 +83,6 @@ impl Twitter {
                     Err(())
                 },
             }).and_then(|rsp| rsp.json().map_err(|error| eprintln!("Twitter: invalid response to post. Error: {:?}", error)))
-            .map(|response: data::TweetResponse| println!("Tweeter(Id={}) OK", response.id))
+            .map(|response: data::TweetResponse| println!("Tweet(Id={}) OK", response.id))
     }
 }
