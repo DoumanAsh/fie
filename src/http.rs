@@ -10,7 +10,7 @@ pub use self::yukikaze::futures::{Future, IntoFuture};
 pub use self::yukikaze::header;
 pub use self::yukikaze::http::Method;
 pub use self::yukikaze::mime::Mime;
-pub use self::yukikaze::rt::{AutoClient, AutoRuntime};
+pub use self::yukikaze::rt::{AutoClient, AutoRuntime, Guard};
 
 use config::Settings;
 
@@ -26,13 +26,14 @@ impl Config for Conf {
     }
 }
 
-pub fn init(settings: &Settings) {
+pub fn init(settings: &Settings) -> Guard {
     unsafe {
         TIMEOUT = settings.timeout;
     }
 
     let client = client::Client::<Conf>::new();
     yukikaze::rt::set(client);
+    yukikaze::rt::init()
 }
 
 pub fn get_timeout() -> Duration {

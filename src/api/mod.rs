@@ -14,17 +14,19 @@ pub struct API {
     gab: Option<gab::Gab>,
     minds: Option<minds::Minds>,
     pub settings: config::Settings,
+    _http_guard: http::Guard
 }
 
 impl API {
     pub fn new(settings: config::Settings) -> Self {
-        http::init(&settings);
+        let _http_guard = http::init(&settings);
 
         Self {
             twitter: None,
             gab: None,
             minds: None,
             settings,
+            _http_guard,
         }
     }
 

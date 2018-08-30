@@ -1,6 +1,6 @@
 [package]
 name = "fie"
-version = "0.9.2"
+version = "0.9.3"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute twitter app."
@@ -14,7 +14,7 @@ include = [
 ]
 
 [dependencies.yukikaze]
-version = "0.1"
+version = "0.2"
 default-features = false
 features = ["rt", "flate2-c"]
 
