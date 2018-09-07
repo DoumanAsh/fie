@@ -41,14 +41,14 @@ impl Twitter {
         // For image we wait twice of time
         // just to be sure
         req.or_else(|resp| resp.retry(http::get_timeout()).into_future().flatten())
-            .map_err(|error| eprintln!("Twitter: Upload error: {:?}", error))
+            .map_err(|error| eprintln!("Twitter: Upload error: {}", error))
             .and_then(|resp| match resp.is_success() {
                 true => Ok(resp),
                 false => {
                     eprintln!("Twitter: failed to upload image. Status code={}", resp.status());
                     Err(())
                 },
-            }).and_then(|rsp| rsp.json().map_err(|error| eprintln!("Twitter: invalid response to upload. Error: {:?}", error)))
+            }).and_then(|rsp| rsp.json().map_err(|error| eprintln!("Twitter: invalid response to upload. Error: {}", error)))
             .map(|response: data::MediaResponse| response.media_id)
     }
 
@@ -75,14 +75,14 @@ impl Twitter {
             .expect("To create tweet data")
             .send();
 
-        req.map_err(|error| eprintln!("Twitter: Post error: {:?}", error))
+        req.map_err(|error| eprintln!("Twitter: Post error: {}", error))
             .and_then(|resp| match resp.is_success() {
                 true => Ok(resp),
                 false => {
                     eprintln!("Twitter: failed to post tweet. Status code={}", resp.status());
                     Err(())
                 },
-            }).and_then(|rsp| rsp.json().map_err(|error| eprintln!("Twitter: invalid response to post. Error: {:?}", error)))
+            }).and_then(|rsp| rsp.json().map_err(|error| eprintln!("Twitter: invalid response to post. Error: {}", error)))
             .map(|response: data::TweetResponse| println!("Tweet(Id={}) OK", response.id))
     }
 }

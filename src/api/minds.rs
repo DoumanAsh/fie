@@ -23,7 +23,7 @@ impl Minds {
         let req = match req {
             Ok(req) => req,
             Err(error) => {
-                eprintln!("Minds: Failed to authorize. Error: {:?}", error);
+                eprintln!("Minds: Failed to authorize. Error: {}", error);
                 return None;
             },
         };
@@ -36,7 +36,7 @@ impl Minds {
         let oauth2 = match req.json::<Oauth2>().finish() {
             Ok(oauth2) => oauth2,
             Err(error) => {
-                eprintln!("Minds: Invalid response to authorize. Error: {:?}", error);
+                eprintln!("Minds: Invalid response to authorize. Error: {}", error);
                 return None;
             },
         };
@@ -53,14 +53,14 @@ impl Minds {
         // For image we wait twice of time
         // just to be sure
         req.or_else(|resp| resp.retry(http::get_timeout()).into_future().flatten())
-           .map_err(|error| eprintln!("Minds: uploading image Error={:?}", error))
+           .map_err(|error| eprintln!("Minds: uploading image Error={}", error))
            .and_then(|resp| match resp.is_success() {
                true => Ok(resp),
                false => {
                    eprintln!("Minds: failed to upload image. Status code={}", resp.status());
                    Err(())
                },
-           }).and_then(|response| response.json::<UploadResponse>().map_err(|error| eprintln!("Minds upload reading error: {:?}", error)))
+           }).and_then(|response| response.json::<UploadResponse>().map_err(|error| eprintln!("Minds upload reading error: {}", error)))
            .map(|response| response.guid)
     }
 
@@ -72,14 +72,14 @@ impl Minds {
             .expect("To serialzie post data")
             .send();
 
-        req.map_err(|error| eprintln!("Minds: post error. Error={:?}", error))
+        req.map_err(|error| eprintln!("Minds: post error. Error={}", error))
            .and_then(|resp| match resp.is_success() {
                true => Ok(resp),
                false => {
                    eprintln!("Minds: failed to post. Status code={}", resp.status());
                    Err(())
                },
-           }).and_then(|resp| resp.json::<UploadResponse>().map_err(|error| eprintln!("Minds: Invalid response. Error={:?}", error)))
+           }).and_then(|resp| resp.json::<UploadResponse>().map_err(|error| eprintln!("Minds: Invalid response. Error={}", error)))
            .map(|resp| println!("Minds(id={}) OK", resp.guid))
     }
 }

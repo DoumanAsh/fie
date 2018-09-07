@@ -29,7 +29,7 @@ impl Gab {
         let login = match login {
             Ok(login) => login,
             Err(error) => {
-                eprintln!("Gab: Unable to get login. Error: {:?}", error);
+                eprintln!("Gab: Unable to get login. Error: {}", error);
                 return None;
             },
         };
@@ -57,7 +57,7 @@ impl Gab {
             let post = match post {
                 Ok(post) => post,
                 Err(error) => {
-                    eprintln!("Gab: Failed to authorize. Error={:?}", error);
+                    eprintln!("Gab: Failed to authorize. Error={}", error);
                     return None;
                 },
             };
@@ -75,13 +75,13 @@ impl Gab {
             let redirect = match redirect {
                 Ok(redirect) => redirect,
                 Err(error) => {
-                    eprintln!("Gab: Failed to redirect on auth success. Error={:?}", error);
+                    eprintln!("Gab: Failed to redirect on auth success. Error={}", error);
                     return None;
                 },
             };
 
             if !redirect.is_success() {
-                eprintln!("Gab: Failed to follow auth redirect. Status code={:?}", redirect.status());
+                eprintln!("Gab: Failed to follow auth redirect. Status code={}", redirect.status());
                 return None;
             }
 
@@ -109,14 +109,14 @@ impl Gab {
         // For image we wait twice of time
         // just to be sure
         req.or_else(|resp| resp.retry(http::get_timeout()).into_future().flatten())
-            .map_err(|error| eprintln!("Gab: uploading image Error={:?}", error))
+            .map_err(|error| eprintln!("Gab: uploading image Error={}", error))
             .and_then(|resp| match resp.is_success() {
                 true => Ok(resp),
                 false => {
                     eprintln!("Gab: failed to upload image. Status code={}", resp.status());
                     Err(())
                 },
-            }).and_then(|response| response.json::<UploadResponse>().map_err(|error| eprintln!("Gab upload reading error: {:?}", error)))
+            }).and_then(|response| response.json::<UploadResponse>().map_err(|error| eprintln!("Gab upload reading error: {}", error)))
             .map(|response| response.id)
     }
 
@@ -128,14 +128,14 @@ impl Gab {
             .expect("To serialzie post data")
             .send();
 
-        req.map_err(|error| eprintln!("Gab: post error. Error={:?}", error))
+        req.map_err(|error| eprintln!("Gab: post error. Error={}", error))
             .and_then(|resp| match resp.is_success() {
                 true => Ok(resp),
                 false => {
                     eprintln!("Gab: failed to post. Status code={}", resp.status());
                     Err(())
                 },
-            }).and_then(|resp| resp.json::<PostResponse>().map_err(|error| eprintln!("Gab: Invalid response. Error={:?}", error)))
+            }).and_then(|resp| resp.json::<PostResponse>().map_err(|error| eprintln!("Gab: Invalid response. Error={}", error)))
             .map(|resp| println!("GAB(id={}) OK", resp.post.id))
     }
 }
