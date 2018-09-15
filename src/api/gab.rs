@@ -87,7 +87,13 @@ impl Gab {
 
             let redirect = redirect.text().finish().expect("To get content of auth redirect");
             match Self::extract_token(&redirect) {
-                Some(token) => token,
+                Some(jwt_token) => match jwt_token == token {
+                    false => jwt_token,
+                    true => {
+                        eprintln!("Gab: Failed to authorize");
+                        return None;
+                    }
+                },
                 None => {
                     eprintln!("Gab: Failed to authorize");
                     return None;
