@@ -14,7 +14,7 @@ include = [
 ]
 
 [dependencies.yukikaze]
-version = "0.2"
+version = "0.3"
 default-features = false
 features = ["rt", "flate2-c"]
 
