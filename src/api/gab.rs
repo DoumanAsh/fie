@@ -3,9 +3,9 @@ use data::PostFlags;
 use http;
 use http::{header, multipart, AutoClient, AutoRuntime, Future, IntoFuture, Mime, Request};
 
-const LOGIN_URL: &'static str = "https://gab.ai/auth/login";
-const IMAGES_URL: &'static str = "https://gab.ai/api/media-attachments/images";
-const POST_URL: &'static str = "https://gab.ai/posts";
+const LOGIN_URL: &'static str = "https://gab.com/auth/login";
+const IMAGES_URL: &'static str = "https://gab.com/api/media-attachments/images";
+const POST_URL: &'static str = "https://gab.com/posts";
 
 pub struct Gab {
     token: String,

@@ -10,15 +10,15 @@ Small and cute social media CLI.
 
 ## Download links
 
-* Windows [32bit](https://github.com/DoumanAsh/fie/releases/download/0.9.5/fie-0.9.5-i686-pc-windows-msvc.zip)
-* Windows [64bit](https://github.com/DoumanAsh/fie/releases/download/0.9.5/fie-0.9.5-x86_64-pc-windows-msvc.zip)
-* Linux [64bit](https://github.com/DoumanAsh/fie/releases/download/0.9.5/fie-0.9.5-x86_64-unknown-linux-gnu.zip)
-* OSX [64bit](https://github.com/DoumanAsh/fie/releases/download/0.9.5/fie-0.9.5-x86_64-apple-darwin.zip)
+* Windows [32bit](https://github.com/DoumanAsh/fie/releases/download/0.9.6/fie-0.9.6-i686-pc-windows-msvc.zip)
+* Windows [64bit](https://github.com/DoumanAsh/fie/releases/download/0.9.6/fie-0.9.6-x86_64-pc-windows-msvc.zip)
+* Linux [64bit](https://github.com/DoumanAsh/fie/releases/download/0.9.6/fie-0.9.6-x86_64-unknown-linux-gnu.zip)
+* OSX [64bit](https://github.com/DoumanAsh/fie/releases/download/0.9.6/fie-0.9.6-x86_64-apple-darwin.zip)
 
 ## Supported social platforms:
 
 * Gab (through unofficial API so may break);
-* Minds.com (through kinda official API);
+* ~Minds.com (through kinda official API);~
 * Twitter. Using official API.
 
 ## Configuration
