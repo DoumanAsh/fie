@@ -1,14 +1,10 @@
-extern crate memmap;
-extern crate mime_guess;
+use memmap::{Mmap, MmapOptions};
+use mime_guess::{guess_mime_type, Mime};
 
-use self::memmap::{Mmap, MmapOptions};
-use self::mime_guess::{guess_mime_type, Mime};
+use crate::misc::ResultExt;
 
-use misc::ResultExt;
-
-use self::io::Read;
 use std::fs::File;
-use std::io;
+use std::io::{self, Read};
 use std::path::Path;
 
 pub fn read_file_to_string<P: AsRef<Path>>(path: P) -> Result<String, String> {

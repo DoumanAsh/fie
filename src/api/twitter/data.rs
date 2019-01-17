@@ -1,12 +1,8 @@
 //! Twitter's data primitives.
-extern crate data_encoding;
-extern crate percent_encoding;
-extern crate rand;
-extern crate ring;
+use crate::http::Method;
+use crate::config;
 
-use http::Method;
-
-use self::percent_encoding::{utf8_percent_encode, EncodeSet};
+use percent_encoding::{utf8_percent_encode, EncodeSet};
 use std::collections::HashMap;
 
 #[derive(Copy, Clone)]
@@ -25,8 +21,6 @@ impl EncodeSet for TwitterEncodeSet {
 fn percent_encode(src: &str) -> impl Iterator<Item = &str> {
     utf8_percent_encode(src, TwitterEncodeSet)
 }
-
-use config;
 
 pub struct Oauth {
     /// Contains percent encoded consumer's key
@@ -132,8 +126,8 @@ impl Oauth {
     ///
     /// Return base64 encoded string.
     fn signature(&self, method: &Method, uri: &str, params: Option<String>) -> String {
-        use self::data_encoding::BASE64;
-        use self::ring::{digest, hmac};
+        use data_encoding::BASE64;
+        use ring::{digest, hmac};
 
         let key = hmac::SigningKey::new(&digest::SHA1, self.signature_key.as_bytes());
         let signature = {
@@ -158,7 +152,7 @@ impl Oauth {
     }
 
     fn nonce() -> String {
-        use self::rand::{distributions, thread_rng, Rng};
+        use rand::{distributions, thread_rng, Rng};
 
         thread_rng().sample_iter(&distributions::Alphanumeric).take(32).collect()
     }
@@ -171,7 +165,7 @@ pub struct Media {
 
 impl Media {
     pub fn from_bytes(bytes: &[u8]) -> Self {
-        use self::data_encoding::BASE64;
+        use data_encoding::BASE64;
         let media_data = BASE64.encode(bytes);
         Self { media_data }
     }

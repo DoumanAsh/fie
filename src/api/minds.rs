@@ -1,7 +1,6 @@
-use config;
-use data::PostFlags;
-use http;
-use http::{multipart, AutoClient, AutoRuntime, Future, IntoFuture, Mime, Request};
+use crate::config;
+use crate::data::PostFlags;
+use crate::http::{self, multipart, AutoClient, AutoRuntime, Future, IntoFuture, Mime, Request};
 
 const OAUTH2_URL: &'static str = "https://www.minds.com/oauth2/token";
 const IMAGES_URL: &'static str = "https://www.minds.com/api/v1/media";

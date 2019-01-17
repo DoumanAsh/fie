@@ -1,11 +1,9 @@
-extern crate toml;
-
 use std::convert;
 
-use config::Platforms;
-use data::PostFlags;
-use io;
-use misc::ResultExt;
+use crate::config::Platforms;
+use crate::data::PostFlags;
+use crate::io;
+use crate::misc::ResultExt;
 
 mod clap;
 use self::clap::{parser, ArgMatches};

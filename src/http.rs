@@ -1,18 +1,14 @@
-extern crate yukikaze;
+use yukikaze::client::config::Config;
+pub use yukikaze::client::request::multipart;
+pub use yukikaze::client::request::Builder;
+pub use yukikaze::client::Request;
+pub use yukikaze::futures::{self, future, Future, IntoFuture};
+pub use yukikaze::header;
+pub use yukikaze::http::Method;
+pub use yukikaze::mime::Mime;
+pub use yukikaze::rt::{AutoClient, AutoRuntime, GlobalClient};
 
-use self::yukikaze::client;
-use self::yukikaze::client::config::Config;
-pub use self::yukikaze::client::request::multipart;
-pub use self::yukikaze::client::request::Builder;
-pub use self::yukikaze::client::Request;
-pub use self::yukikaze::futures;
-pub use self::yukikaze::futures::{Future, IntoFuture};
-pub use self::yukikaze::header;
-pub use self::yukikaze::http::Method;
-pub use self::yukikaze::mime::Mime;
-pub use self::yukikaze::rt::{AutoClient, AutoRuntime, Guard};
-
-use config::Settings;
+use crate::config::Settings;
 
 use std::time::Duration;
 
@@ -26,14 +22,20 @@ impl Config for Conf {
     }
 }
 
-pub fn init(settings: &Settings) -> Guard {
+pub struct HttpRuntime {
+    pub tokio: yukikaze::rt::tokio::Guard,
+    pub http: GlobalClient,
+}
+
+pub fn init(settings: &Settings) -> HttpRuntime {
     unsafe {
         TIMEOUT = settings.timeout;
     }
 
-    let client = client::Client::<Conf>::new();
-    yukikaze::rt::set(client);
-    yukikaze::rt::init()
+    HttpRuntime {
+        tokio: yukikaze::rt::tokio::init(),
+        http: GlobalClient::with_config::<Conf>(),
+    }
 }
 
 pub fn get_timeout() -> Duration {

@@ -1,12 +1,11 @@
-use data::PostFlags;
+use crate::data::PostFlags;
 
 mod data;
 
 use std::collections::HashMap;
 
-use config;
-use http;
-use http::{AutoClient, Future, IntoFuture, Mime, Request};
+use crate::config;
+use crate::http::{self, AutoClient, Future, IntoFuture, Mime, Request};
 
 const IMAGES_URL: &'static str = "https://upload.twitter.com/1.1/media/upload.json";
 const POST_URL: &'static str = "https://api.twitter.com/1.1/statuses/update.json";

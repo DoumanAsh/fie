@@ -1,7 +1,6 @@
-use config;
-use data::PostFlags;
-use http;
-use http::{header, multipart, AutoClient, AutoRuntime, Future, IntoFuture, Mime, Request};
+use crate::config;
+use crate::data::PostFlags;
+use crate::http::{self, header, multipart, AutoClient, AutoRuntime, Future, IntoFuture, Mime, Request};
 
 const LOGIN_URL: &'static str = "https://gab.com/auth/login";
 const IMAGES_URL: &'static str = "https://gab.com/api/media-attachments/images";

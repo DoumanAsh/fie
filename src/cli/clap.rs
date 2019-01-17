@@ -1,6 +1,4 @@
-extern crate clap;
-
-pub use self::clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
+pub use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
 #[inline(always)]
 /// Shortcut to create CLI argument

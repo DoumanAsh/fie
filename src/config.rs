@@ -1,11 +1,9 @@
 //! Configuration module
-extern crate toml;
-
 use std::env;
 use std::path::{Path, PathBuf};
 
-use io;
-use misc::ResultExt;
+use crate::io;
+use crate::misc::ResultExt;
 
 pub const NAME: &'static str = "fie.toml";
 

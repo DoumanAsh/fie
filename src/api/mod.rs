@@ -1,9 +1,7 @@
-use cli;
-use config;
-use http;
-use io;
-
-use http::Future;
+use crate::cli;
+use crate::config;
+use crate::io;
+use crate::http::{future, AutoRuntime, HttpRuntime, Future};
 
 mod gab;
 mod minds;
@@ -14,12 +12,12 @@ pub struct API {
     gab: Option<gab::Gab>,
     minds: Option<minds::Minds>,
     pub settings: config::Settings,
-    _http_guard: http::Guard
+    _http_guard: HttpRuntime,
 }
 
 impl API {
     pub fn new(settings: config::Settings) -> Self {
-        let _http_guard = http::init(&settings);
+        let _http_guard = crate::http::init(&settings);
 
         Self {
             twitter: None,
@@ -77,9 +75,6 @@ impl API {
     }
 
     pub fn send(&self, post: cli::Post) {
-        use http::futures::future;
-        use http::AutoRuntime;
-
         let cli::Post { message, tags, flags, images } = post;
 
         let message = if tags.len() > 0 {
