@@ -18,6 +18,13 @@ secret = "secret"
 username = "username"
 password = "password"
 
+# Mastodon config
+# You can use own application in Developement section
+# and get access token
+[mastodon]
+host = "pawoo.net"
+access_token = ""
+
 # Configures which platforms to use by default.
 # If this section is omitted then it is assumed that all to use.
 # Otherwise missing platform means it is not used.
@@ -26,6 +33,7 @@ password = "password"
 minds = true
 gab = true
 twitter = true
+mastodon = true
 
 [settings]
 # Amount of seconds to wait for responses from API server.

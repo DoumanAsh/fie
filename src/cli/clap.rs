@@ -65,6 +65,7 @@ pub fn parser() -> App<'static, 'static> {
         .arg(flag("gab").help("Use gab.ai. By default all social medias are used unless flag is specified."))
         .arg(flag("twitter").help("Use Twitter. By default all social medias are used unless flag is specified."))
         .arg(flag("minds").help("Use Minds.com. By default all social medias are used unless flag is specified."))
+        .arg(flag("mastodon").help("Use Mastodon. By default all social medias are used unless flag is specified."))
         .subcommand(post_command())
         .subcommand(env_command())
         .subcommand(batch_command())

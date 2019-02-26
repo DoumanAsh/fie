@@ -3,6 +3,7 @@
 ## Minds
 
 Just provide your password and login
+
 ```toml
 [minds]
 username = "username"
@@ -12,6 +13,7 @@ password = "password"
 ## Gab
 
 Just provide your password and login
+
 ```toml
 [gab]
 username = "username"
@@ -40,4 +42,18 @@ Put it in section below:
 [twitter.access]
 key = "token"
 secret = "secret"
+```
+
+## Mastodon
+
+You need to provide host name of the Mastodon instance.
+
+**Note:** that it should be without `http` prefix
+
+Access token can be granted by creating own application via `Preferences->Developement->New Application`
+
+```toml
+[mastodon]
+host = "pawoo.net"
+access_token = ""
 ```

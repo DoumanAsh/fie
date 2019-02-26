@@ -11,6 +11,8 @@ pub const NAME: &'static str = "fie.toml";
 #[serde(default)]
 pub struct Platforms {
     #[serde(default)]
+    pub mastodon: bool,
+    #[serde(default)]
     pub gab: bool,
     #[serde(default)]
     pub twitter: bool,
@@ -24,6 +26,7 @@ pub struct Platforms {
 impl Default for Platforms {
     fn default() -> Self {
         Platforms {
+            mastodon: true,
             gab: true,
             twitter: true,
             minds: true,
@@ -50,6 +53,15 @@ pub struct Gab {
     pub username: String,
     #[serde(default)]
     pub password: String,
+}
+
+/// Mastodon configuration.
+#[derive(Deserialize, Debug)]
+pub struct Mastodon {
+    #[serde(default)]
+    pub host: String,
+    #[serde(default)]
+    pub access_token: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -82,6 +94,7 @@ pub struct Config {
     pub gab: Gab,
     pub twitter: Twitter,
     pub minds: Minds,
+    pub mastodon: Mastodon,
     #[serde(default)]
     pub settings: Settings,
 }

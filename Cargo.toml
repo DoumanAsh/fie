@@ -1,10 +1,10 @@
 [package]
 name = "fie"
-version = "0.9.6"
+version = "0.10.0"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute twitter app."
-keywords = ["twitter", "gab", "minds"]
+keywords = ["twitter", "gab", "minds", "mastodon"]
 license = "Apache-2.0"
 readme = "README.md"
 include = [

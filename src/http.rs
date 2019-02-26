@@ -4,7 +4,7 @@ pub use yukikaze::client::request::Builder;
 pub use yukikaze::client::Request;
 pub use yukikaze::futures::{self, future, Future, IntoFuture};
 pub use yukikaze::header;
-pub use yukikaze::http::Method;
+pub use yukikaze::http::{Uri, Method};
 pub use yukikaze::mime::Mime;
 pub use yukikaze::rt::{AutoClient, AutoRuntime, GlobalClient};
 

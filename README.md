@@ -10,16 +10,17 @@ Small and cute social media CLI.
 
 ## Download links
 
-* Windows [32bit](https://github.com/DoumanAsh/fie/releases/download/0.9.6/fie-0.9.6-i686-pc-windows-msvc.zip)
-* Windows [64bit](https://github.com/DoumanAsh/fie/releases/download/0.9.6/fie-0.9.6-x86_64-pc-windows-msvc.zip)
-* Linux [64bit](https://github.com/DoumanAsh/fie/releases/download/0.9.6/fie-0.9.6-x86_64-unknown-linux-gnu.zip)
-* OSX [64bit](https://github.com/DoumanAsh/fie/releases/download/0.9.6/fie-0.9.6-x86_64-apple-darwin.zip)
+* Windows [32bit](https://github.com/DoumanAsh/fie/releases/download/0.10.0/fie-0.10.0-i686-pc-windows-msvc.zip)
+* Windows [64bit](https://github.com/DoumanAsh/fie/releases/download/0.10.0/fie-0.10.0-x86_64-pc-windows-msvc.zip)
+* Linux [64bit](https://github.com/DoumanAsh/fie/releases/download/0.10.0/fie-0.10.0-x86_64-unknown-linux-gnu.zip)
+* OSX [64bit](https://github.com/DoumanAsh/fie/releases/download/0.10.0/fie-0.10.0-x86_64-apple-darwin.zip)
 
 ## Supported social platforms:
 
 * Gab (through unofficial API so may break);
 * ~Minds.com (through kinda official API);~
 * Twitter. Using official API.
+* Mastodon. Using official API.
 
 ## Configuration
 
@@ -38,16 +39,18 @@ USAGE:
     fie.exe [FLAGS] [SUBCOMMAND]
 
 FLAGS:
-        --gab        Use gab.ai. By default all social medias are used unless flag is specified.
-    -h, --help       Prints help information
-        --minds      Use Minds.com. By default all social medias are used unless flag is specified.
-        --twitter    Use Twitter. By default all social medias are used unless flag is specified.
-    -V, --version    Prints version information
+        --gab         Use gab.ai. By default all social medias are used unless flag is specified.
+    -h, --help        Prints help information
+        --mastodon    Use Mastodon. By default all social medias are used unless flag is specified.
+        --minds       Use Minds.com. By default all social medias are used unless flag is specified.
+        --twitter     Use Twitter. By default all social medias are used unless flag is specified.
+    -V, --version     Prints version information
 
 SUBCOMMANDS:
-    env     Prints information about app environment.
-    help    Prints this message or the help of the given subcommand(s)
-    post    Creates new tweet.
+    batch    Load CLI arguments from file and runs it.
+    env      Prints information about app environment.
+    help     Prints this message or the help of the given subcommand(s)
+    post     Creates new tweet.
 ```
 
 ### post

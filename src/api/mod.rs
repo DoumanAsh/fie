@@ -6,11 +6,13 @@ use crate::http::{future, AutoRuntime, HttpRuntime, Future};
 mod gab;
 mod minds;
 mod twitter;
+mod mastodon;
 
 pub struct API {
     twitter: Option<twitter::Twitter>,
     gab: Option<gab::Gab>,
     minds: Option<minds::Minds>,
+    mastodon: Option<mastodon::Mastodon>,
     pub settings: config::Settings,
     _http_guard: HttpRuntime,
 }
@@ -23,6 +25,7 @@ impl API {
             twitter: None,
             gab: None,
             minds: None,
+            mastodon: None,
             settings,
             _http_guard,
         }
@@ -60,6 +63,15 @@ impl API {
 
         self
     }
+
+    pub fn start_mastodon_if(mut self, cond: bool, config: config::Mastodon) -> Self {
+        if cond {
+            self.mastodon = mastodon::Mastodon::new(config);
+        }
+
+        self
+    }
+
 
     fn join_hash_tags(tags: Vec<String>) -> String {
         let mut result = String::new();
@@ -133,6 +145,18 @@ impl API {
                     jobs.push(Box::new(uploads));
                 }
 
+                if let Some(ref mastodon) = self.mastodon {
+                    let mut uploads = vec![];
+                    for image in images.iter() {
+                        let upload = mastodon.upload_image(&image.name, &image.mime, &image.mmap[..]);
+                        uploads.push(Box::new(upload));
+                    }
+
+                    let uploads = future::join_all(uploads).and_then(move |uploads| mastodon.post(&message, &uploads, &flags)).or_else(|_| Ok(()));
+
+                    jobs.push(Box::new(uploads));
+                }
+
                 if let Some(ref minds) = self.minds {
                     match images.len() {
                         1 => (),
@@ -158,6 +182,10 @@ impl API {
                 }
                 if let Some(ref minds) = self.minds {
                     let post = minds.post(&message, None, &flags).or_else(|_| Ok(()));
+                    jobs.push(Box::new(post));
+                }
+                if let Some(ref mastodon) = self.mastodon {
+                    let post = mastodon.post(&message, &[], &flags).or_else(|_| Ok(()));
                     jobs.push(Box::new(post));
                 }
             },

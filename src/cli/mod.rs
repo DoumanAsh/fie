@@ -103,11 +103,12 @@ impl Flags {
         let gab = matches.is_present("gab");
         let twitter = matches.is_present("twitter");
         let minds = matches.is_present("minds");
+        let mastodon = matches.is_present("mastodon");
 
-        if !gab && !twitter && !minds {
+        if !gab && !twitter && !minds && !mastodon {
             None
         } else {
-            Some(Flags { gab, twitter, minds })
+            Some(Flags { gab, twitter, minds, mastodon })
         }
     }
 }

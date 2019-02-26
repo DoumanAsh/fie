@@ -18,7 +18,8 @@ fn run() -> Result<i32, String> {
             let api = api::API::new(config.settings)
                 .start_gab_if(args.flags.gab, config.gab)
                 .start_minds_if(args.flags.minds, config.minds)
-                .start_twitter_if(args.flags.twitter, config.twitter);
+                .start_twitter_if(args.flags.twitter, config.twitter)
+                .start_mastodon_if(args.flags.mastodon, config.mastodon);
 
             api.send(post);
         },
@@ -27,7 +28,8 @@ fn run() -> Result<i32, String> {
                 let api = api::API::new(config.settings)
                     .start_gab_if(args.flags.gab, config.gab)
                     .start_minds_if(args.flags.minds, config.minds)
-                    .start_twitter_if(args.flags.twitter, config.twitter);
+                    .start_twitter_if(args.flags.twitter, config.twitter)
+                    .start_mastodon_if(args.flags.mastodon, config.mastodon);
 
                 for (idx, post) in posts.into_iter().enumerate() {
                     println!(">>>Post #{}", idx + 1);
