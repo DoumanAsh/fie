@@ -22,10 +22,10 @@ features = ["rt", "flate2-c"]
 [dependencies]
 data-encoding = "2"
 percent-encoding = "1"
-rand = "0.5"
-ring = "0.13"
+rand = "0.6"
+ring = "0.14"
 
-memmap = "0.6"
+memmap = "0.7"
 
 clap = "2"
 
