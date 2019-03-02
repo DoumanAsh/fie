@@ -15,7 +15,7 @@ include = [
 edition = "2018"
 
 [dependencies.yukikaze]
-version = "0.4"
+version = "0.5"
 default-features = false
 features = ["rt", "flate2-c"]
 
