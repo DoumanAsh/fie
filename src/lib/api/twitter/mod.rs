@@ -1,27 +1,39 @@
-use crate::data::PostFlags;
+//!Twitter API
 
-mod data;
+pub mod data;
+mod error;
 
 use std::collections::HashMap;
 
 use crate::config;
-use crate::http::{self, AutoClient, Future, IntoFuture, Mime, Request};
+use super::http::{self, AutoClient, Future, IntoFuture, Mime, Request};
+
+use crate::data::PostFlags;
+pub use error::TwitterError;
 
 const IMAGES_URL: &'static str = "https://upload.twitter.com/1.1/media/upload.json";
 const POST_URL: &'static str = "https://api.twitter.com/1.1/statuses/update.json";
 
+///Twitter API
 pub struct Twitter {
     oauth: data::Oauth,
 }
 
 impl Twitter {
-    pub fn new(config: config::Twitter) -> Option<Self> {
-        let oauth = data::Oauth::new(config);
-
-        Some(Self { oauth })
+    ///Verifies and creates twitter API instance
+    pub fn new(config: config::Twitter) -> Result<Self, TwitterError> {
+        if config.consumer.key.len() == 0 || config.consumer.secret.len() == 0 || config.access.key.len() == 0 || config.access.secret.len() == 0 {
+            Err(TwitterError::InvalidAuthData)
+        } else {
+            let oauth = data::Oauth::new(config);
+            Ok(Self { oauth })
+        }
     }
 
-    pub fn upload_image(&self, _name: &str, _mime: &Mime, data: &[u8]) -> impl Future<Item = u64, Error = ()> {
+    ///Prepares image upload request.
+    ///
+    ///Future result contains `id` from `MediaResponse`
+    pub fn upload_image(&self, _name: &str, _mime: &Mime, data: &[u8]) -> impl Future<Item = u64, Error = TwitterError> {
         let media = data::Media::from_bytes(data);
 
         let auth_header = {
@@ -40,18 +52,16 @@ impl Twitter {
         // For image we wait twice of time
         // just to be sure
         req.or_else(|resp| resp.retry(http::get_timeout()).into_future().flatten())
-            .map_err(|error| eprintln!("Twitter: Upload error: {}", error))
+            .map_err(|_| TwitterError::ImageUploadSendError)
             .and_then(|resp| match resp.is_success() {
                 true => Ok(resp),
-                false => {
-                    eprintln!("Twitter: failed to upload image. Status code={}", resp.status());
-                    Err(())
-                },
-            }).and_then(|rsp| rsp.json().map_err(|error| eprintln!("Twitter: invalid response to upload. Error: {}", error)))
+                false => Err(TwitterError::ImageUploadServerReject),
+            }).and_then(|rsp| rsp.json().map_err(|_| TwitterError::PostUploadInvalidResponse))
             .map(|response: data::MediaResponse| response.media_id)
     }
 
-    pub fn post(&self, message: &str, media_attachments: &[u64], flags: &PostFlags) -> impl Future<Item = (), Error = ()> {
+    ///Prepares post upload request.
+    pub fn post(&self, message: &str, media_attachments: &[u64], flags: &PostFlags) -> impl Future<Item = crate::data::PostId, Error = TwitterError> {
         let tweet = data::Tweet::new(message).nsfw(flags.nsfw).media_ids(media_attachments);
 
         let auth_header = {
@@ -74,14 +84,11 @@ impl Twitter {
             .expect("To create tweet data")
             .send();
 
-        req.map_err(|error| eprintln!("Twitter: Post error: {}", error))
+        req.map_err(|_| TwitterError::PostUploadSendError)
             .and_then(|resp| match resp.is_success() {
                 true => Ok(resp),
-                false => {
-                    eprintln!("Twitter: failed to post tweet. Status code={}", resp.status());
-                    Err(())
-                },
-            }).and_then(|rsp| rsp.json().map_err(|error| eprintln!("Twitter: invalid response to post. Error: {}", error)))
-            .map(|response: data::TweetResponse| println!("Tweet(Id={}) OK", response.id))
+                false => Err(TwitterError::PostUploadServerReject),
+            }).and_then(|rsp| rsp.json().map_err(|_| TwitterError::PostUploadInvalidResponse))
+            .map(|response: data::TweetResponse| response.id.into())
     }
 }

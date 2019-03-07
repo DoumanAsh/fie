@@ -1,21 +1,23 @@
 //! Configuration module
-use std::env;
-use std::path::{Path, PathBuf};
+use serde_derive::{Deserialize};
 
-use crate::io;
-use crate::misc::ResultExt;
-
-pub const NAME: &'static str = "fie.toml";
-
+///Describes which social platforms are enabled
+///
+///By default, if all platforms are not specified, then all are enabled.
+///Otherwise, at least one is specified, each platform is assumed to be disabled
 #[derive(Deserialize, Debug)]
 #[serde(default)]
 pub struct Platforms {
+    ///Whether Mastodon is enabled
     #[serde(default)]
     pub mastodon: bool,
+    ///Whether Gab is enabled
     #[serde(default)]
     pub gab: bool,
+    ///Whether Twitter is enabled
     #[serde(default)]
     pub twitter: bool,
+    ///Whether Minds is enabled
     #[serde(default)]
     pub minds: bool,
 }
@@ -34,23 +36,30 @@ impl Default for Platforms {
     }
 }
 
+///Pair of key and secret
 #[derive(Deserialize, Debug)]
 pub struct Token {
+    ///Key
     pub key: String,
+    ///Secret
     pub secret: String,
 }
 /// Twitter configuration
 #[derive(Deserialize, Debug)]
 pub struct Twitter {
+    ///Consumer tokens, belongs to app.
     pub consumer: Token,
+    ///Access tokens, granted per user.
     pub access: Token,
 }
 
 /// Gab configuration.
 #[derive(Deserialize, Debug)]
 pub struct Gab {
+    ///Username for authorization
     #[serde(default)]
     pub username: String,
+    ///Password for authorization
     #[serde(default)]
     pub password: String,
 }
@@ -58,15 +67,22 @@ pub struct Gab {
 /// Mastodon configuration.
 #[derive(Deserialize, Debug)]
 pub struct Mastodon {
+    ///Hostname to connect
     #[serde(default)]
     pub host: String,
+    ///API's access token.
+    ///
+    ///Available through creating app on developer page
     #[serde(default)]
     pub access_token: String,
 }
 
+/// Minds configuration.
 #[derive(Deserialize, Debug)]
 pub struct Minds {
+    ///Username for authorization
     pub username: String,
+    ///Password for authorization
     pub password: String,
 }
 
@@ -74,10 +90,13 @@ fn default_timeout() -> u64 {
     5
 }
 
+/// Fie's settings
 #[derive(Deserialize, Debug, Clone)]
 pub struct Settings {
     #[serde(default = "default_timeout")]
     /// Amount of seconds to wait for all HTTP responses
+    ///
+    /// By default is 5.
     pub timeout: u64,
 }
 
@@ -88,51 +107,27 @@ impl Default for Settings {
 }
 
 #[derive(Deserialize, Debug)]
+///Social media's API information
+pub struct ApiConfig {
+    ///Gab information
+    pub gab: Gab,
+    ///Twitter information
+    pub twitter: Twitter,
+    ///Minds information
+    pub minds: Minds,
+    ///Mastodon information
+    pub mastodon: Mastodon,
+}
+
+///Fie's configuration
+#[derive(Deserialize, Debug)]
 pub struct Config {
+    ///Enable/disable switches for social medias
     #[serde(default)]
     pub platforms: Platforms,
-    pub gab: Gab,
-    pub twitter: Twitter,
-    pub minds: Minds,
-    pub mastodon: Mastodon,
+    ///Social media's API information
+    pub api: ApiConfig,
+    ///Fie settings
     #[serde(default)]
     pub settings: Settings,
-}
-
-impl Config {
-    pub fn from_file(path: &Path) -> Result<Self, String> {
-        toml::from_str(io::read_file_to_string(path)?.as_str()).format_err("Invalid config file!")
-    }
-
-    pub fn default_config_path() -> PathBuf {
-        let mut result = env::current_exe().unwrap();
-        result.set_file_name(NAME);
-
-        result
-    }
-
-    pub fn from_default_config() -> Result<Self, String> {
-        let path = Self::default_config_path();
-
-        Self::from_file(&path)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::fs::File;
-    use std::io::{BufReader, Read};
-
-    #[test]
-    fn deserialize() {
-        let file = File::open("fie.toml").unwrap();
-        let mut file = BufReader::new(file);
-
-        let mut buffer = String::new();
-        file.read_to_string(&mut buffer).unwrap();
-
-        let result: Config = toml::from_str(&buffer).unwrap();
-        println!("{:?}", result);
-    }
 }

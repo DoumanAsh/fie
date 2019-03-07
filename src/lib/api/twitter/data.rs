@@ -1,7 +1,8 @@
 //! Twitter's data primitives.
-use crate::http::Method;
+use super::super::http::Method;
 use crate::config;
 
+use serde_derive::{Serialize, Deserialize};
 use percent_encoding::{utf8_percent_encode, EncodeSet};
 use std::collections::HashMap;
 
@@ -22,6 +23,7 @@ fn percent_encode(src: &str) -> impl Iterator<Item = &str> {
     utf8_percent_encode(src, TwitterEncodeSet)
 }
 
+///Twitter Oauth
 pub struct Oauth {
     /// Contains percent encoded consumer's key
     consumer_key: String,
@@ -29,13 +31,16 @@ pub struct Oauth {
     ///
     /// It is used as seeding value for hmac generation of signature.
     signature_key: String,
+    ///Current method is `HMAC-SHA1`
     oauth_signature_method: &'static str,
     /// Contains percent encoded access token's key
     oauth_token: String,
+    ///Current version is `1.0`
     oauth_version: &'static str,
 }
 
 impl Oauth {
+    ///Creates new Oauth
     pub fn new(config: config::Twitter) -> Self {
         let consumer_key = percent_encode(&config.consumer.key).collect();
         let oauth_token = percent_encode(&config.access.key).collect();
@@ -159,11 +164,14 @@ impl Oauth {
 }
 
 #[derive(Serialize, Debug)]
+///Media's payload
 pub struct Media {
+    ///Content
     pub media_data: String,
 }
 
 impl Media {
+    ///Creates BASE64 encoded media from file's content
     pub fn from_bytes(bytes: &[u8]) -> Self {
         use data_encoding::BASE64;
         let media_data = BASE64.encode(bytes);
@@ -172,18 +180,25 @@ impl Media {
 }
 
 #[derive(Deserialize, Debug)]
+///Response with attachment's id
 pub struct MediaResponse {
+    ///ID
     pub media_id: u64,
 }
 
 #[derive(Serialize, Debug)]
+///Tweet's representation
 pub struct Tweet<'a> {
+    ///Text of tweet
     pub status: &'a str,
+    ///List of attachments separated by `,`
     pub media_ids: Option<String>,
+    ///Whether content is NSFW
     pub possibly_sensitive: bool,
 }
 
 impl<'a> Tweet<'a> {
+    ///Creates new instance
     pub fn new(status: &'a str) -> Self {
         Self {
             status,
@@ -192,11 +207,13 @@ impl<'a> Tweet<'a> {
         }
     }
 
+    ///Sets NSFW flag
     pub fn nsfw(mut self, value: bool) -> Self {
         self.possibly_sensitive = value;
         self
     }
 
+    ///Adds attachments
     pub fn media_ids(mut self, ids: &[u64]) -> Self {
         if !ids.is_empty() {
             let ids = ids.iter().map(|id| id.to_string()).collect::<Vec<String>>().join(",");
@@ -207,6 +224,8 @@ impl<'a> Tweet<'a> {
 }
 
 #[derive(Deserialize, Debug)]
+///Response to successful tweet creation.
 pub struct TweetResponse {
+    ///ID
     pub id: u64,
 }

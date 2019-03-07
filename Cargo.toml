@@ -3,7 +3,7 @@ name = "fie"
 version = "0.10.0"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
-description = "Small and cute twitter app."
+description = "Small and cute social media utility."
 keywords = ["twitter", "gab", "minds", "mastodon"]
 license = "Apache-2.0"
 readme = "README.md"
@@ -20,19 +20,30 @@ default-features = false
 features = ["rt", "flate2-c"]
 
 [dependencies]
+memmap = "0.7"
+
 data-encoding = "2"
 percent-encoding = "1"
 rand = "0.6"
 ring = "0.14"
 
-memmap = "0.7"
-
-clap = "2"
+clap = {version = "2", optional = true}
 
 serde = "1"
-toml = "0"
 serde_derive = "1"
 mime_guess = "2.0.0-alpha.6"
+
+[features]
+cli = ["clap"]
+
+[[bin]]
+name = "fie"
+path = "src/bin/main.rs"
+required-features = ["cli"]
+
+[lib]
+name = "fie"
+path = "src/lib/lib.rs"
 
 [profile.release]
 lto = true
