@@ -19,12 +19,11 @@ install:
 build: false
 
 test_script:
-  - cargo build
-  - cargo test
+  - cargo test --features cli
 
 before_deploy:
   # Generate artifacts for release
-  - cargo build --release
+  - cargo build --release --features cli
   - mkdir staging
   - copy fie.toml staging
   - copy target\release\*.exe staging

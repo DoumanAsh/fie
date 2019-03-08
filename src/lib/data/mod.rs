@@ -23,11 +23,11 @@ pub struct Post {
     pub message: String,
     ///Hashtags to add
     pub tags: Vec<String>,
+    ///Attachments
+    pub images: Vec<String>,
     #[serde(default)]
     ///Flags
     pub flags: PostFlags,
-    ///Attachments
-    pub images: Option<Vec<String>>,
 }
 
 ///Generic Post ID.

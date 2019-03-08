@@ -18,11 +18,10 @@ matrix:
 sudo: false
 
 script:
-  - cargo build --target $TARGET
-  - cargo test --target $TARGET
+  - cargo test --features cli --target $TARGET
 
 before_deploy:
-  - cargo build --release --target $TARGET
+  - cargo build --release --features cli --target $TARGET
   - zip "$PROJECT_NAME-$TRAVIS_TAG-$TARGET.zip" -j target/$TARGET/release/fie fie.toml
 
 deploy:

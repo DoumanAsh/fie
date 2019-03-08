@@ -3,7 +3,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/oc937oppd38x1y4y/branch/master?svg=true)](https://ci.appveyor.com/project/DoumanAsh/fie/branch/master)
 [![Build Status](https://travis-ci.org/DoumanAsh/fie.svg?branch=master)](https://travis-ci.org/DoumanAsh/fie)
 [![Crates.io](https://img.shields.io/crates/v/fie.svg)](https://crates.io/crates/fie)
-[![Dependency status](https://deps.rs/crate/fie/0.10.0/status.svg)](https://deps.rs/crate/fie)
+[![Dependency status](https://deps.rs/crate/fie/0.11.0/status.svg)](https://deps.rs/crate/fie)
 
 Small and cute social media CLI.
 
@@ -11,10 +11,10 @@ Small and cute social media CLI.
 
 ## Download links
 
-* Windows [32bit](https://github.com/DoumanAsh/fie/releases/download/0.10.0/fie-0.10.0-i686-pc-windows-msvc.zip)
-* Windows [64bit](https://github.com/DoumanAsh/fie/releases/download/0.10.0/fie-0.10.0-x86_64-pc-windows-msvc.zip)
-* Linux [64bit](https://github.com/DoumanAsh/fie/releases/download/0.10.0/fie-0.10.0-x86_64-unknown-linux-gnu.zip)
-* OSX [64bit](https://github.com/DoumanAsh/fie/releases/download/0.10.0/fie-0.10.0-x86_64-apple-darwin.zip)
+* Windows [32bit](https://github.com/DoumanAsh/fie/releases/download/0.11.0/fie-0.11.0-i686-pc-windows-msvc.zip)
+* Windows [64bit](https://github.com/DoumanAsh/fie/releases/download/0.11.0/fie-0.11.0-x86_64-pc-windows-msvc.zip)
+* Linux [64bit](https://github.com/DoumanAsh/fie/releases/download/0.11.0/fie-0.11.0-x86_64-unknown-linux-gnu.zip)
+* OSX [64bit](https://github.com/DoumanAsh/fie/releases/download/0.11.0/fie-0.11.0-x86_64-apple-darwin.zip)
 
 ## Supported social platforms:
 
@@ -33,23 +33,23 @@ Use [example](fie.toml) as reference.
 ## Usage
 
 ```
-Small and cute twitter app.
+Small and cute social media utility.
 
 USAGE:
-    fie.exe [FLAGS] [SUBCOMMAND]
+    fie.exe [FLAGS] <SUBCOMMAND>
 
 FLAGS:
-        --gab         Use gab.ai. By default all social medias are used unless flag is specified.
+    -g, --gab         Use gab.ai. By default all social medias are used unless flag is specified.
     -h, --help        Prints help information
-        --mastodon    Use Mastodon. By default all social medias are used unless flag is specified.
-        --twitter     Use Twitter. By default all social medias are used unless flag is specified.
+    -m, --mastodon    Use mastodon. By default all social medias are used unless flag is specified.
+    -t, --twitter     Use twitter. By default all social medias are used unless flag is specified.
     -V, --version     Prints version information
 
 SUBCOMMANDS:
     batch    Load CLI arguments from file and runs it.
     env      Prints information about app environment.
     help     Prints this message or the help of the given subcommand(s)
-    post     Creates new tweet.
+    post     Creates new post.
 ```
 
 ### post
@@ -58,17 +58,18 @@ Uses to post content on social platforms.
 Using `-t` you can specify hashtags which will be appended as last line of content.
 
 ```
-Creates new tweet
+Creates new post.
 
 USAGE:
-    fie.exe post [OPTIONS] <message>
+    fie.exe post [FLAGS] [OPTIONS] <message>
 
 FLAGS:
     -h, --help    Prints help information
+    -n, --nsfw    Whether post is NSFW or not.
 
 OPTIONS:
-    -i <image>...        Adds image to post. Normally up to 4.
-    -t <tag>...          Adds hashtag at the last line of post.
+    -i, --image <images>...    Adds image to post. Normally up to 4.
+    -t, --tag <tags>...        Adds hashtag at the last line of post.
 
 ARGS:
     <message>    Message content
@@ -100,7 +101,7 @@ Prints information about app's environment.
 Prints information about app environment.
 
 USAGE:
-    fie.exe env [SUBCOMMAND]
+    fie.exe env <SUBCOMMAND>
 
 FLAGS:
     -h, --help    Prints help information

@@ -5,18 +5,18 @@ use serde_derive::{Deserialize};
 ///
 ///By default, if all platforms are not specified, then all are enabled.
 ///Otherwise, at least one is specified, each platform is assumed to be disabled
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Copy, Clone, Debug)]
 #[serde(default)]
 pub struct Platforms {
-    ///Whether Mastodon is enabled
-    #[serde(default)]
-    pub mastodon: bool,
-    ///Whether Gab is enabled
-    #[serde(default)]
-    pub gab: bool,
     ///Whether Twitter is enabled
     #[serde(default)]
     pub twitter: bool,
+    ///Whether Gab is enabled
+    #[serde(default)]
+    pub gab: bool,
+    ///Whether Mastodon is enabled
+    #[serde(default)]
+    pub mastodon: bool,
 }
 
 // If the whole section on Platforms is missing then we assume

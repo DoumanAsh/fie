@@ -134,8 +134,45 @@ impl API {
         let message = message.as_str();
         let flags = &flags;
 
-        let inner: Result<PostResultInner, ()> = match images {
-            Some(ref mut images) if images.len() > 0 => {
+        let inner: Result<PostResultInner, ()> = match images.len() {
+            0 => {
+                //Twitter
+                let twitter = match self.twitter {
+                    Some(ref twitter) => {
+                        let post = twitter.post(&message, &[], &flags).map_err(|error| ApiError::Twitter(error))
+                                          .map(|res| Some(Ok(res)))
+                                          .or_else(|err| Ok(Some(Err(err))));
+
+                        future::Either::A(post)
+                    },
+                    None => future::Either::B(future::ok(None))
+                };
+
+                twitter.join3(
+                    //Gab
+                    if let Some(ref gab) = self.gab {
+                        let post = gab.post(&message, &[], &flags).map_err(|error| ApiError::Gab(error))
+                                      .map(|res| Some(Ok(res)))
+                                      .or_else(|err| Ok(Some(Err(err))));
+
+                        future::Either::A(post)
+
+                    } else {
+                        future::Either::B(future::ok(None))
+                    },
+                    //Mastodon
+                    if let Some(ref mastodon) = self.mastodon {
+                        let post = mastodon.post(&message, &[], &flags).map_err(|error| ApiError::Mastodon(error))
+                                           .map(|res| Some(Ok(res)))
+                                           .or_else(|err| Ok(Some(Err(err))));
+
+                        future::Either::A(post)
+                    } else {
+                        future::Either::B(future::ok(None))
+                    },
+                ).finish()
+            },
+            _ => {
                 let images = {
                     let mut result = vec![];
                     for image in images.drain(..) {
@@ -202,43 +239,6 @@ impl API {
                     },
                 ).finish()
             },
-            _ => {
-                //Twitter
-                let twitter = match self.twitter {
-                    Some(ref twitter) => {
-                        let post = twitter.post(&message, &[], &flags).map_err(|error| ApiError::Twitter(error))
-                                          .map(|res| Some(Ok(res)))
-                                          .or_else(|err| Ok(Some(Err(err))));
-
-                        future::Either::A(post)
-                    },
-                    None => future::Either::B(future::ok(None))
-                };
-
-                twitter.join3(
-                    //Gab
-                    if let Some(ref gab) = self.gab {
-                        let post = gab.post(&message, &[], &flags).map_err(|error| ApiError::Gab(error))
-                                      .map(|res| Some(Ok(res)))
-                                      .or_else(|err| Ok(Some(Err(err))));
-
-                        future::Either::A(post)
-
-                    } else {
-                        future::Either::B(future::ok(None))
-                    },
-                    //Mastodon
-                    if let Some(ref mastodon) = self.mastodon {
-                        let post = mastodon.post(&message, &[], &flags).map_err(|error| ApiError::Mastodon(error))
-                                           .map(|res| Some(Ok(res)))
-                                           .or_else(|err| Ok(Some(Err(err))));
-
-                        future::Either::A(post)
-                    } else {
-                        future::Either::B(future::ok(None))
-                    },
-                ).finish()
-            }
         };
 
         Ok(PostResult {

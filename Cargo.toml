@@ -1,6 +1,6 @@
 [package]
 name = "fie"
-version = "0.10.0"
+version = "0.11.0"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute social media utility."
@@ -19,6 +19,11 @@ version = "0.5"
 default-features = false
 features = ["rt", "flate2-c"]
 
+[dependencies.structopt]
+version = "0.2"
+optional = true
+features = ["wrap_help", "suggestions"]
+
 [dependencies]
 memmap = "0.7"
 
@@ -27,18 +32,19 @@ percent-encoding = "1"
 rand = "0.6"
 ring = "0.14"
 
-clap = {version = "2", optional = true}
-
 serde = "1"
 serde_derive = "1"
 mime_guess = "2.0.0-alpha.6"
 
+toml = { version = "0.4", optional = true }
+dirs = { version = "1", optional = true }
+
 [features]
-cli = ["clap"]
+cli = ["structopt", "toml", "dirs"]
 
 [[bin]]
 name = "fie"
-path = "src/bin/main.rs"
+path = "src/cli/main.rs"
 required-features = ["cli"]
 
 [lib]

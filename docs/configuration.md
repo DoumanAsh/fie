@@ -1,5 +1,15 @@
 # Configuration
 
+## Location
+
+Fie looks up following locations:
+
+- `<directory with executable>/fie.toml`
+- `<HOME>/.fie/fie.toml`
+
+If first is missing it uses the home's config.
+If both are missing then error happens
+
 ## Gab
 
 Just provide your password and login
