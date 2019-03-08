@@ -37,6 +37,14 @@ fn create_api(config: Config) -> io::Result<fie::API> {
         }
     }
 
+    if config.platforms.minds {
+        if let Err(error) = api.enable(config.api.minds) {
+            eprintln!("{}", error);
+        } else {
+            any_enabled = true
+        }
+    }
+
     match any_enabled {
         true => Ok(api),
         false => Err(io::Error::new(io::ErrorKind::Other, "No API is enabled :(")),
@@ -44,7 +52,7 @@ fn create_api(config: Config) -> io::Result<fie::API> {
 }
 
 fn handle_post_result(result: fie::api::PostResult) {
-    let (twitter, gab, mastodon) = result.into_parts();
+    let (twitter, gab, mastodon, minds) = result.into_parts();
 
     let handle_inner = |prefix, result| if let Some(result) = result {
         match result {
@@ -56,6 +64,7 @@ fn handle_post_result(result: fie::api::PostResult) {
     handle_inner("Twitter", twitter);
     handle_inner("Gab", gab);
     handle_inner("Mastodon", mastodon);
+    handle_inner("Minds", minds);
 }
 
 fn open_batch(path: &str) -> io::Result<Vec<fie::data::Post>> {

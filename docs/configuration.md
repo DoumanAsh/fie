@@ -15,7 +15,17 @@ If both are missing then error happens
 Just provide your password and login
 
 ```toml
-[gab]
+[api.gab]
+username = "username"
+password = "password"
+```
+
+## Minds
+
+Just provide your password and login
+
+```toml
+[api.gab]
 username = "username"
 password = "password"
 ```
@@ -30,7 +40,7 @@ After that go to section `Keys and Access Tokens` to retrieve configuration:
 Put it in section below:
 
 ```toml
-[twitter.consumer]
+[api.twitter.consumer]
 key = "key"
 secret = "secret"
 ```
@@ -39,7 +49,7 @@ secret = "secret"
 Put it in section below:
 
 ```toml
-[twitter.access]
+[api.twitter.access]
 key = "token"
 secret = "secret"
 ```
@@ -53,7 +63,7 @@ You need to provide host name of the Mastodon instance.
 Access token can be granted by creating own application via `Preferences->Developement->New Application`
 
 ```toml
-[mastodon]
+[api.mastodon]
 host = "pawoo.net"
 access_token = ""
 ```

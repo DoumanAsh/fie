@@ -1,5 +1,10 @@
-# Login and password from Gab.ai
+# Login and password from Gab.com
 [api.gab]
+username = "username"
+password = "password"
+
+# Login and password from Minds.com
+[api.minds]
 username = "username"
 password = "password"
 

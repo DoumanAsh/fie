@@ -124,12 +124,12 @@ impl Gab {
         // For image we wait twice of time
         // just to be sure
         req.or_else(|resp| resp.retry(http::get_timeout()).into_future().flatten())
-            .map_err(|_| GabError::ImageUploadSendError)
-            .and_then(|resp| match resp.is_success() {
-                true => Ok(resp),
-                false => Err(GabError::ImageUploadServerReject),
-            }).and_then(|response| response.json::<UploadResponse>().map_err(|_| GabError::PostUploadInvalidResponse))
-            .map(|response| response.id)
+           .map_err(|_| GabError::ImageUploadSendError)
+           .and_then(|resp| match resp.is_success() {
+               true => Ok(resp),
+               false => Err(GabError::ImageUploadServerReject),
+           }).and_then(|response| response.json::<UploadResponse>().map_err(|_| GabError::PostUploadInvalidResponse))
+           .map(|response| response.id)
     }
 
     ///Prepares post upload request.
@@ -142,10 +142,10 @@ impl Gab {
             .send();
 
         req.map_err(|_| GabError::PostUploadSendError)
-            .and_then(|resp| match resp.is_success() {
-                true => Ok(resp),
-                false => Err(GabError::PostUploadServerReject),
-            }).and_then(|resp| resp.json::<PostResponse>().map_err(|_| GabError::PostUploadInvalidResponse))
-            .map(|resp| resp.post.id.into())
+           .and_then(|resp| match resp.is_success() {
+               true => Ok(resp),
+               false => Err(GabError::PostUploadServerReject),
+           }).and_then(|resp| resp.json::<PostResponse>().map_err(|_| GabError::PostUploadInvalidResponse))
+           .map(|resp| resp.post.id.into())
     }
 }

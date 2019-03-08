@@ -21,7 +21,7 @@ impl Args {
         let args = Self::from_args();
 
         //Unless user specifies manually, we use configuration defaults
-        if args.flags.twitter || args.flags.gab || args.flags.mastodon {
+        if args.flags.twitter || args.flags.gab || args.flags.mastodon || args.flags.minds {
             *platforms = unsafe { mem::transmute(args.flags) }
         }
 
@@ -40,6 +40,9 @@ pub struct Flags {
     #[structopt(short = "m", long = "mastodon")]
     ///Use mastodon. By default all social medias are used unless flag is specified.
     pub mastodon: bool,
+    #[structopt(long = "minds")]
+    ///Use minds. By default all social medias are used unless flag is specified.
+    pub minds: bool,
 }
 
 #[derive(Debug, StructOpt)]

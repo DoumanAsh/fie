@@ -1,13 +1,15 @@
 //!Social medias API module
 
 mod http;
-pub mod mastodon;
-pub mod gab;
 pub mod twitter;
+pub mod gab;
+pub mod mastodon;
+pub mod minds;
 
 use twitter::{Twitter, TwitterError};
 use gab::{Gab, GabError};
 use mastodon::{Mastodon, MastodonError};
+use minds::{Minds, MindsError};
 use http::{future, Future, AutoRuntime, HttpRuntime};
 use crate::data::{join_hash_tags, PostId, Post};
 
@@ -22,21 +24,24 @@ use std::io;
 pub enum ApiError {
     ///Unable to load Image for attachment
     CannotLoadImage(String, io::Error),
-    ///Mastodon error
-    Mastodon(MastodonError),
-    ///Gab error
-    Gab(GabError),
     ///Twitter error
     Twitter(TwitterError),
+    ///Gab error
+    Gab(GabError),
+    ///Mastodon error
+    Mastodon(MastodonError),
+    ///Minds error
+    Minds(MindsError),
 }
 
 impl fmt::Display for ApiError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             &ApiError::CannotLoadImage(ref name, ref error) => write!(f, "Error opening image '{}'. Error: {}", name, error),
-            &ApiError::Mastodon(ref error) => write!(f, "Mastodon API Error: {}", error),
-            &ApiError::Gab(ref error) => write!(f, "Gab API Error: {}", error),
             &ApiError::Twitter(ref error) => write!(f, "Twitter API Error: {}", error),
+            &ApiError::Gab(ref error) => write!(f, "Gab API Error: {}", error),
+            &ApiError::Mastodon(ref error) => write!(f, "Mastodon API Error: {}", error),
+            &ApiError::Minds(ref error) => write!(f, "MindsError API Error: {}", error),
         }
     }
 }
@@ -61,8 +66,13 @@ impl From<TwitterError> for ApiError {
     }
 }
 
+impl From<MindsError> for ApiError {
+    fn from(error: MindsError) -> Self {
+        ApiError::Minds(error)
+    }
+}
 
-type PostResultInner = (Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>);
+type PostResultInner = (Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>);
 ///Result of Post.
 pub struct PostResult {
     inner: PostResultInner,
@@ -84,9 +94,14 @@ impl PostResult {
         self.inner.2.take()
     }
 
+    ///Retrieves Minds's result
+    pub fn minds(&mut self) -> Option<Result<PostId, ApiError>> {
+        self.inner.3.take()
+    }
+
     ///Retrieves underlying errors.
     ///
-    ///Order: Twitter, Gab, Mastodon
+    ///Order: Twitter, Gab, Mastodon, Minds
     pub fn into_parts(self) -> PostResultInner {
         self.inner
     }
@@ -97,6 +112,7 @@ pub struct API {
     twitter: Option<Twitter>,
     gab: Option<Gab>,
     mastodon: Option<Mastodon>,
+    minds: Option<Minds>,
     _http: HttpRuntime,
 }
 
@@ -107,6 +123,7 @@ impl API {
             twitter: None,
             mastodon: None,
             gab: None,
+            minds: None,
             _http: http::init(&settings)
         }
     }
@@ -148,7 +165,7 @@ impl API {
                     None => future::Either::B(future::ok(None))
                 };
 
-                twitter.join3(
+                twitter.join4(
                     //Gab
                     if let Some(ref gab) = self.gab {
                         let post = gab.post(&message, &[], &flags).map_err(|error| ApiError::Gab(error))
@@ -167,6 +184,17 @@ impl API {
                                            .or_else(|err| Ok(Some(Err(err))));
 
                         future::Either::A(post)
+                    } else {
+                        future::Either::B(future::ok(None))
+                    },
+                    //Minds
+                    if let Some(ref minds) = self.minds {
+                        let post = minds.post(&message, None, &flags).map_err(|error| ApiError::Minds(error))
+                                        .map(|res| Some(Ok(res)))
+                                        .or_else(|err| Ok(Some(Err(err))));
+
+                        future::Either::A(post)
+
                     } else {
                         future::Either::B(future::ok(None))
                     },
@@ -204,7 +232,7 @@ impl API {
                 };
 
                 //Twitter
-                twitter.join3(
+                twitter.join4(
                     //Gab
                     if let Some(ref gab) = self.gab {
                         let mut uploads = vec![];
@@ -233,6 +261,18 @@ impl API {
                                                                .and_then(move |uploads| mastodon.post(&message, &uploads, &flags).from_err())
                                                                .map(|res| Some(Ok(res)))
                                                                .or_else(|err| Ok(Some(Err(err))));
+                        future::Either::A(uploads)
+                    } else {
+                        future::Either::B(future::ok(None))
+                    },
+                    //Minds
+                    if let Some(ref minds) = self.minds {
+                        let image = unsafe { images.get_unchecked(0) };
+                        let image_upload = minds.upload_image(&image.name, &image.mime, &image.mmap[..]);
+                        let uploads = image_upload.map_err(|error| ApiError::Minds(error))
+                                                  .and_then(move |image| minds.post(&message, Some(image), &flags).from_err())
+                                                  .map(|res| Some(Ok(res)))
+                                                  .or_else(|err| Ok(Some(Err(err))));
                         future::Either::A(uploads)
                     } else {
                         future::Either::B(future::ok(None))
@@ -282,6 +322,17 @@ impl ApiEnabler for crate::config::Twitter {
         }
 
         api.twitter = Some(Twitter::new(config)?);
+        Ok(())
+    }
+}
+
+impl ApiEnabler for crate::config::Minds {
+    fn enable(api: &mut API, config: Self) -> Result<(), ApiError> {
+        if api.minds.is_some() {
+            return Ok(());
+        }
+
+        api.minds = Some(Minds::new(config)?);
         Ok(())
     }
 }
