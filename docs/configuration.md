@@ -1,15 +1,5 @@
 # Configuration
 
-## Minds
-
-Just provide your password and login
-
-```toml
-[minds]
-username = "username"
-password = "password"
-```
-
 ## Gab
 
 Just provide your password and login

@@ -19,7 +19,6 @@ Small and cute social media CLI.
 ## Supported social platforms:
 
 * Gab (through unofficial API so may break);
-* ~Minds.com (through kinda official API);~
 * Twitter. Using official API.
 * Mastodon. Using official API.
 
@@ -43,7 +42,6 @@ FLAGS:
         --gab         Use gab.ai. By default all social medias are used unless flag is specified.
     -h, --help        Prints help information
         --mastodon    Use Mastodon. By default all social medias are used unless flag is specified.
-        --minds       Use Minds.com. By default all social medias are used unless flag is specified.
         --twitter     Use Twitter. By default all social medias are used unless flag is specified.
     -V, --version     Prints version information
 

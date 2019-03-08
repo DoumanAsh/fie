@@ -17,9 +17,6 @@ pub struct Platforms {
     ///Whether Twitter is enabled
     #[serde(default)]
     pub twitter: bool,
-    ///Whether Minds is enabled
-    #[serde(default)]
-    pub minds: bool,
 }
 
 // If the whole section on Platforms is missing then we assume
@@ -31,7 +28,6 @@ impl Default for Platforms {
             mastodon: true,
             gab: true,
             twitter: true,
-            minds: true,
         }
     }
 }
@@ -77,15 +73,6 @@ pub struct Mastodon {
     pub access_token: String,
 }
 
-/// Minds configuration.
-#[derive(Deserialize, Debug)]
-pub struct Minds {
-    ///Username for authorization
-    pub username: String,
-    ///Password for authorization
-    pub password: String,
-}
-
 fn default_timeout() -> u64 {
     5
 }
@@ -113,8 +100,6 @@ pub struct ApiConfig {
     pub gab: Gab,
     ///Twitter information
     pub twitter: Twitter,
-    ///Minds information
-    pub minds: Minds,
     ///Mastodon information
     pub mastodon: Mastodon,
 }

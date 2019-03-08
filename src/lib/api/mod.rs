@@ -62,7 +62,7 @@ impl From<TwitterError> for ApiError {
 }
 
 
-type PostResultInner = (Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>);
+type PostResultInner = (Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>);
 ///Result of Post.
 pub struct PostResult {
     inner: PostResultInner,
@@ -84,14 +84,9 @@ impl PostResult {
         self.inner.2.take()
     }
 
-    ///Retrieves Minds's result
-    pub fn minds(&mut self) -> Option<Result<PostId, ApiError>> {
-        self.inner.3.take()
-    }
-
     ///Retrieves underlying errors.
     ///
-    ///Order: Twitter, Gab, Mastodon, Minds
+    ///Order: Twitter, Gab, Mastodon
     pub fn into_parts(self) -> PostResultInner {
         self.inner
     }
@@ -172,7 +167,7 @@ impl API {
                 };
 
                 //Twitter
-                twitter.join4(
+                twitter.join3(
                     //Gab
                     if let Some(ref gab) = self.gab {
                         let mut uploads = vec![];
@@ -205,8 +200,6 @@ impl API {
                     } else {
                         future::Either::B(future::ok(None))
                     },
-                    //Minds
-                    future::ok(None),
                 ).finish()
             },
             _ => {
@@ -222,7 +215,7 @@ impl API {
                     None => future::Either::B(future::ok(None))
                 };
 
-                twitter.join4(
+                twitter.join3(
                     //Gab
                     if let Some(ref gab) = self.gab {
                         let post = gab.post(&message, &[], &flags).map_err(|error| ApiError::Gab(error))
@@ -244,8 +237,6 @@ impl API {
                     } else {
                         future::Either::B(future::ok(None))
                     },
-                    //Minds
-                    future::ok(None),
                 ).finish()
             }
         };

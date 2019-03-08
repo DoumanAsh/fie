@@ -1,27 +1,22 @@
 # Login and password from Gab.ai
-[gab]
+[api.gab]
 username = "username"
 password = "password"
 
 # Consumer Token of twitter app
-[twitter.consumer]
+[api.twitter.consumer]
 key = "key"
 secret = "secret"
 
 # Authorization Token to access user account. Generated in developer page.
-[twitter.access]
+[api.twitter.access]
 key = "key"
 secret = "secret"
-
-# Login and password from Minds.com
-[minds]
-username = "username"
-password = "password"
 
 # Mastodon config
 # You can use own application in Developement section
 # and get access token
-[mastodon]
+[api.mastodon]
 host = "pawoo.net"
 access_token = ""
 
