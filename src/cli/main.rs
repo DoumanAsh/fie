@@ -1,5 +1,7 @@
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::style))]
 
+use serde_derive::Deserialize;
+
 mod config;
 mod cli;
 
@@ -67,7 +69,12 @@ fn handle_post_result(result: fie::api::PostResult) {
     handle_inner("Minds", minds);
 }
 
-fn open_batch(path: &str) -> io::Result<Vec<fie::data::Post>> {
+#[derive(Deserialize, Debug)]
+pub struct Batch {
+    post: Vec<fie::data::Post>,
+}
+
+fn open_batch(path: &str) -> io::Result<Batch> {
     config::load_from_file(Path::new(path))
 }
 
@@ -83,7 +90,7 @@ fn run() -> io::Result<()> {
         cli::Command::Batch(batch) => {
             let api = create_api(config)?;
 
-            for (idx, post) in open_batch(&batch.file)?.drain(..).enumerate() {
+            for (idx, post) in open_batch(&batch.file)?.post.drain(..).enumerate() {
                 println!(">>>Post #{}:", idx + 1);
                 match api.send(post) {
                     Ok(result) => handle_post_result(result),
