@@ -37,7 +37,7 @@ impl Default for Platforms {
 }
 
 ///Pair of key and secret
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 pub struct Token {
     ///Key
     pub key: String,
@@ -45,7 +45,7 @@ pub struct Token {
     pub secret: String,
 }
 /// Twitter configuration
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 pub struct Twitter {
     ///Consumer tokens, belongs to app.
     pub consumer: Token,
@@ -54,7 +54,7 @@ pub struct Twitter {
 }
 
 /// Gab configuration.
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 pub struct Gab {
     ///Username for authorization
     #[serde(default)]
@@ -65,7 +65,7 @@ pub struct Gab {
 }
 
 /// Mastodon configuration.
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 pub struct Mastodon {
     ///Hostname to connect
     #[serde(default)]
@@ -78,7 +78,7 @@ pub struct Mastodon {
 }
 
 /// Minds configuration.
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 pub struct Minds {
     ///Username for authorization
     #[serde(default)]
@@ -108,7 +108,7 @@ impl Default for Settings {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 ///Social media's API information
 pub struct ApiConfig {
     ///Gab information
