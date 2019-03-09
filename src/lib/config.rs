@@ -1,11 +1,11 @@
 //! Configuration module
-use serde_derive::{Deserialize};
+use serde_derive::{Serialize, Deserialize};
 
 ///Describes which social platforms are enabled
 ///
 ///By default, if all platforms are not specified, then all are enabled.
 ///Otherwise, at least one is specified, each platform is assumed to be disabled
-#[derive(Deserialize, Copy, Clone, Debug)]
+#[derive(Serialize, Deserialize, Copy, Clone, Debug)]
 #[serde(default)]
 pub struct Platforms {
     ///Whether Twitter is enabled
@@ -37,7 +37,7 @@ impl Default for Platforms {
 }
 
 ///Pair of key and secret
-#[derive(Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Token {
     ///Key
     pub key: String,
@@ -45,7 +45,7 @@ pub struct Token {
     pub secret: String,
 }
 /// Twitter configuration
-#[derive(Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Twitter {
     ///Consumer tokens, belongs to app.
     pub consumer: Token,
@@ -54,7 +54,7 @@ pub struct Twitter {
 }
 
 /// Gab configuration.
-#[derive(Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Gab {
     ///Username for authorization
     #[serde(default)]
@@ -65,7 +65,7 @@ pub struct Gab {
 }
 
 /// Mastodon configuration.
-#[derive(Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Mastodon {
     ///Hostname to connect
     #[serde(default)]
@@ -78,7 +78,7 @@ pub struct Mastodon {
 }
 
 /// Minds configuration.
-#[derive(Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Minds {
     ///Username for authorization
     #[serde(default)]
@@ -93,7 +93,7 @@ fn default_timeout() -> u64 {
 }
 
 /// Fie's settings
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Settings {
     #[serde(default = "default_timeout")]
     /// Amount of seconds to wait for all HTTP responses
@@ -108,7 +108,7 @@ impl Default for Settings {
     }
 }
 
-#[derive(Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 ///Social media's API information
 pub struct ApiConfig {
     ///Gab information
@@ -122,7 +122,7 @@ pub struct ApiConfig {
 }
 
 ///Fie's configuration
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     ///Enable/disable switches for social medias
     #[serde(default)]
