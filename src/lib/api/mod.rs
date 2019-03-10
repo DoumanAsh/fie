@@ -128,11 +128,21 @@ impl API {
         }
     }
 
-    ///Enables specified API by providing it configuration
+    ///Configures specified API by providing it configuration
     ///
     ///Does nothing if already enabled
-    pub fn enable<T: ApiEnabler>(&mut self, config: T) -> Result<(), ApiError> {
-        T::enable(self, config)
+    pub fn configure<T: ApiEnabler>(&mut self, config: T) -> Result<(), ApiError> {
+        T::configure(self, config)
+    }
+
+    ///Enables specified API by providing it back
+    pub fn enable<T: ApiEnabler>(&mut self, api: Option<T::ApiType>) {
+        T::enable(self, api)
+    }
+
+    ///Disables specified API by taking it
+    pub fn disable<T: ApiEnabler>(&mut self) -> Option<T::ApiType> {
+        T::disable(self)
     }
 
     ///Sends Post to enabled APIs (blocking)
@@ -289,12 +299,23 @@ impl API {
 
 ///Describes how to enable API
 pub trait ApiEnabler {
+    ///API's type
+    type ApiType;
+
     ///Enables API
-    fn enable(api: &mut API, config: Self) -> Result<(), ApiError>;
+    fn configure(api: &mut API, config: Self) -> Result<(), ApiError>;
+
+    ///Disables API
+    fn enable(api: &mut API, new: Option<Self::ApiType>);
+
+    ///Disables API
+    fn disable(api: &mut API) -> Option<Self::ApiType>;
 }
 
 impl ApiEnabler for crate::config::Mastodon {
-    fn enable(api: &mut API, config: Self) -> Result<(), ApiError> {
+    type ApiType = Mastodon;
+
+    fn configure(api: &mut API, config: Self) -> Result<(), ApiError> {
         if api.mastodon.is_some() {
             return Ok(());
         }
@@ -302,10 +323,20 @@ impl ApiEnabler for crate::config::Mastodon {
         api.mastodon = Some(Mastodon::new(config)?);
         Ok(())
     }
+
+    fn enable(api: &mut API, new: Option<Self::ApiType>) {
+        api.mastodon = new;
+    }
+
+    fn disable(api: &mut API) -> Option<Self::ApiType> {
+        api.mastodon.take()
+    }
 }
 
 impl ApiEnabler for crate::config::Gab {
-    fn enable(api: &mut API, config: Self) -> Result<(), ApiError> {
+    type ApiType = Gab;
+
+    fn configure(api: &mut API, config: Self) -> Result<(), ApiError> {
         if api.gab.is_some() {
             return Ok(());
         }
@@ -313,10 +344,20 @@ impl ApiEnabler for crate::config::Gab {
         api.gab = Some(Gab::new(config)?);
         Ok(())
     }
+
+    fn enable(api: &mut API, new: Option<Self::ApiType>) {
+        api.gab = new;
+    }
+
+    fn disable(api: &mut API) -> Option<Self::ApiType> {
+        api.gab.take()
+    }
 }
 
 impl ApiEnabler for crate::config::Twitter {
-    fn enable(api: &mut API, config: Self) -> Result<(), ApiError> {
+    type ApiType = Twitter;
+
+    fn configure(api: &mut API, config: Self) -> Result<(), ApiError> {
         if api.twitter.is_some() {
             return Ok(());
         }
@@ -324,15 +365,33 @@ impl ApiEnabler for crate::config::Twitter {
         api.twitter = Some(Twitter::new(config)?);
         Ok(())
     }
+
+    fn enable(api: &mut API, new: Option<Self::ApiType>) {
+        api.twitter = new;
+    }
+
+    fn disable(api: &mut API) -> Option<Self::ApiType> {
+        api.twitter.take()
+    }
 }
 
 impl ApiEnabler for crate::config::Minds {
-    fn enable(api: &mut API, config: Self) -> Result<(), ApiError> {
+    type ApiType = Minds;
+
+    fn configure(api: &mut API, config: Self) -> Result<(), ApiError> {
         if api.minds.is_some() {
             return Ok(());
         }
 
         api.minds = Some(Minds::new(config)?);
         Ok(())
+    }
+
+    fn enable(api: &mut API, new: Option<Self::ApiType>) {
+        api.minds = new;
+    }
+
+    fn disable(api: &mut API) -> Option<Self::ApiType> {
+        api.minds.take()
     }
 }

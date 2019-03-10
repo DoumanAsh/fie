@@ -16,7 +16,7 @@ fn create_api(config: Config) -> io::Result<fie::API> {
     let mut api = fie::API::new(config.settings);
 
     if config.platforms.gab {
-        if let Err(error) = api.enable(config.api.gab) {
+        if let Err(error) = api.configure(config.api.gab) {
             eprintln!("{}", error);
         } else {
             any_enabled = true
@@ -24,7 +24,7 @@ fn create_api(config: Config) -> io::Result<fie::API> {
     }
 
     if config.platforms.twitter {
-        if let Err(error) = api.enable(config.api.twitter) {
+        if let Err(error) = api.configure(config.api.twitter) {
             eprintln!("{}", error);
         } else {
             any_enabled = true
@@ -32,7 +32,7 @@ fn create_api(config: Config) -> io::Result<fie::API> {
     }
 
     if config.platforms.mastodon {
-        if let Err(error) = api.enable(config.api.mastodon) {
+        if let Err(error) = api.configure(config.api.mastodon) {
             eprintln!("{}", error);
         } else {
             any_enabled = true
@@ -40,7 +40,7 @@ fn create_api(config: Config) -> io::Result<fie::API> {
     }
 
     if config.platforms.minds {
-        if let Err(error) = api.enable(config.api.minds) {
+        if let Err(error) = api.configure(config.api.minds) {
             eprintln!("{}", error);
         } else {
             any_enabled = true
