@@ -30,7 +30,6 @@ pub trait FileSystemLoad: DeserializeOwned {
             Some(mut result) => {
                 result.push(".fie");
                 result.push(NAME);
-                println!("Look: {}", result.display());
                 if result.exists() {
                     return Ok(result)
                 }
