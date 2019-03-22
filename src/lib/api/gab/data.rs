@@ -79,7 +79,7 @@ impl<'a> PostData<'a> {
 ///Post description
 pub struct Post {
     ///ID
-    pub id: u64,
+    pub id: String,
 }
 
 #[derive(Deserialize, Debug)]
