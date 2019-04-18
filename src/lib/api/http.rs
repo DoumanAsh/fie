@@ -6,7 +6,8 @@ pub use yukikaze::futures::{self, future, Future, IntoFuture};
 pub use yukikaze::header;
 pub use yukikaze::http::{Uri, Method};
 pub use yukikaze::mime::Mime;
-pub use yukikaze::rt::{AutoClient, AutoRuntime, GlobalClient};
+pub use yukikaze::rt::{AutoClient, GlobalClient};
+pub use tokio_global::AutoRuntime;
 
 use crate::config::Settings;
 
@@ -23,7 +24,7 @@ impl Config for Conf {
 }
 
 pub struct HttpRuntime {
-    pub tokio: yukikaze::rt::tokio::Guard,
+    pub tokio: tokio_global::single::Runtime,
     pub http: GlobalClient,
 }
 
@@ -33,7 +34,7 @@ pub fn init(settings: &Settings) -> HttpRuntime {
     }
 
     HttpRuntime {
-        tokio: yukikaze::rt::tokio::init(),
+        tokio: tokio_global::single::init(),
         http: GlobalClient::with_config::<Conf>(),
     }
 }
