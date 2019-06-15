@@ -14,7 +14,8 @@ password = "password"
 key = ""
 secret = ""
 
-# Authorization Token to access user account. Generated in developer page.
+# Authorization Token to access user account.
+# Generated in developer page or through auth command.
 [api.twitter.access]
 key = "key"
 secret = "secret"
