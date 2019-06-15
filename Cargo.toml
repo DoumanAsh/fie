@@ -1,6 +1,6 @@
 [package]
 name = "fie"
-version = "0.14.0"
+version = "0.14.1"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute social media utility."

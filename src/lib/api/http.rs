@@ -1,3 +1,5 @@
+//!Http runtime
+
 use yukikaze::client::config::Config;
 pub use yukikaze::client::request::multipart;
 pub use yukikaze::client::request::Builder;
@@ -23,22 +25,25 @@ impl Config for Conf {
     }
 }
 
+///Http runtime used by fie
 pub struct HttpRuntime {
-    pub tokio: tokio_global::single::Runtime,
-    pub http: GlobalClient,
+    _tokio: tokio_global::single::Runtime,
+    _http: GlobalClient,
 }
 
+///Initializes instance of runtime
 pub fn init(settings: &Settings) -> HttpRuntime {
     unsafe {
         TIMEOUT = settings.timeout;
     }
 
     HttpRuntime {
-        tokio: tokio_global::single::init(),
-        http: GlobalClient::with_config::<Conf>(),
+        _tokio: tokio_global::single::init(),
+        _http: GlobalClient::with_config::<Conf>(),
     }
 }
 
+///Gets currently set timeout value
 pub fn get_timeout() -> Duration {
     unsafe { Duration::from_secs(TIMEOUT) }
 }

@@ -4,6 +4,7 @@ use serde_derive::Deserialize;
 
 mod config;
 mod cli;
+mod auth;
 
 use fie::config::Config;
 use config::FileSystemLoad;
@@ -78,8 +79,27 @@ fn open_batch(path: &str) -> io::Result<Batch> {
     config::load_from_file(Path::new(path))
 }
 
+fn use_twitter_builtin_consumer(twitter: &mut fie::config::Twitter) {
+    const CONSUMER_KEY: Option<&'static str> = option_env!("FIE_TWITTER_CONSUMER_KEY");
+    const CONSUMER_SECRET: Option<&'static str> = option_env!("FIE_TWITTER_CONSUMER_SECRET");
+
+    //Only set if either part of consumer token is missing
+    match (CONSUMER_KEY, CONSUMER_SECRET) {
+        (Some(key), Some(secret)) => if twitter.consumer.key.len() == 0 || twitter.consumer.secret.len() == 0{
+            twitter.consumer.key.truncate(0);
+            twitter.consumer.secret.truncate(0);
+
+            twitter.consumer.key.push_str(key);
+            twitter.consumer.secret.push_str(secret);
+        },
+        _ => (),
+    }
+}
+
 fn run() -> io::Result<()> {
     let mut config = Config::load()?;
+    use_twitter_builtin_consumer(&mut config.api.twitter);
+
     let args = cli::Args::new(&mut config.platforms);
 
     match args.cmd {
@@ -100,6 +120,11 @@ fn run() -> io::Result<()> {
         },
         cli::Command::Env(env) => match env {
             cli::Env::Config => println!("{}", Config::path()?.display())
+        },
+        cli::Command::Auth(typ) => match typ {
+            cli::Auth::Twitter => {
+                auth::twitter(config.api.twitter);
+            }
         }
     }
 

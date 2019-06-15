@@ -2,9 +2,9 @@ environment:
   global:
     PROJECT_NAME: fie
   matrix:
-    - TARGET: i686-pc-windows-msvc
-      CHANNEL: stable
     - TARGET: x86_64-pc-windows-msvc
+      CHANNEL: stable
+    - TARGET: i686-pc-windows-msvc
       CHANNEL: stable
 
 # Install Rust and Cargo

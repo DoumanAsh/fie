@@ -1,6 +1,6 @@
 //!Social medias API module
 
-mod http;
+pub mod http;
 pub mod twitter;
 pub mod gab;
 pub mod mastodon;

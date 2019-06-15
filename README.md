@@ -3,18 +3,29 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/oc937oppd38x1y4y/branch/master?svg=true)](https://ci.appveyor.com/project/DoumanAsh/fie/branch/master)
 [![Build Status](https://travis-ci.org/DoumanAsh/fie.svg?branch=master)](https://travis-ci.org/DoumanAsh/fie)
 [![Crates.io](https://img.shields.io/crates/v/fie.svg)](https://crates.io/crates/fie)
-[![Dependency status](https://deps.rs/crate/fie/0.14.0/status.svg)](https://deps.rs/crate/fie)
+[![Dependency status](https://deps.rs/crate/fie/0.14.1/status.svg)](https://deps.rs/crate/fie)
 
 Small and cute social media CLI.
 
 ![Icon](icon.jpg)
 
-## Download links
+## Installation
 
-* Windows [32bit](https://github.com/DoumanAsh/fie/releases/download/0.14.0/fie-0.14.0-i686-pc-windows-msvc.zip)
-* Windows [64bit](https://github.com/DoumanAsh/fie/releases/download/0.14.0/fie-0.14.0-x86_64-pc-windows-msvc.zip)
-* Linux [64bit](https://github.com/DoumanAsh/fie/releases/download/0.14.0/fie-0.14.0-x86_64-unknown-linux-gnu.zip)
-* OSX [64bit](https://github.com/DoumanAsh/fie/releases/download/0.14.0/fie-0.14.0-x86_64-apple-darwin.zip)
+### Download links
+
+* Windows [32bit](https://github.com/DoumanAsh/fie/releases/download/0.14.1/fie-0.14.1-i686-pc-windows-msvc.zip)
+* Windows [64bit](https://github.com/DoumanAsh/fie/releases/download/0.14.1/fie-0.14.1-x86_64-pc-windows-msvc.zip)
+* Linux [64bit](https://github.com/DoumanAsh/fie/releases/download/0.14.1/fie-0.14.1-x86_64-unknown-linux-gnu.zip)
+* OSX [64bit](https://github.com/DoumanAsh/fie/releases/download/0.14.1/fie-0.14.1-x86_64-apple-darwin.zip)
+
+### Cargo
+
+In order to install CLI utility you need to enable feature `cli`
+In addition to that following environment variables are used optionally:
+
+- Twitter Consumer Token (requires both to present for it to be used):
+    - `FIE_TWITTER_CONSUMER_KEY` - Builtin Consumer key for twitter API;
+    - `FIE_TWITTER_CONSUMER_SECRET` - Builtin Consumer secret for twitter API;
 
 ## Supported social platforms:
 
@@ -48,6 +59,7 @@ FLAGS:
     -V, --version     Prints version information
 
 SUBCOMMANDS:
+    auth     Allows to perform authorization with social media.
     batch    Load CLI arguments from file and runs it.
     env      Prints information about app environment.
     help     Prints this message or the help of the given subcommand(s)
@@ -79,9 +91,9 @@ ARGS:
 
 ### batch
 
-```
 Load CLI arguments from file and runs it.
 
+```
 USAGE:
     fie.exe batch <file>
 
@@ -100,8 +112,6 @@ File examples:
 Prints information about app's environment.
 
 ```
-Prints information about app environment.
-
 USAGE:
     fie.exe env <SUBCOMMAND>
 
@@ -111,4 +121,23 @@ FLAGS:
 SUBCOMMANDS:
     config    Prints path to config file.
     help      Prints this message or the help of the given subcommand(s)
+```
+
+### auth
+
+Allows to perform user authorization using social media API.
+Currently available authorizations:
+
+- Twitter PIN based auth. Interactive dialogue will prompt you to follow link and authorize fie.
+
+```
+USAGE:
+    fie.exe auth <SUBCOMMAND>
+
+FLAGS:
+    -h, --help    Prints help information
+
+SUBCOMMANDS:
+    help       Prints this message or the help of the given subcommand(s)
+    twitter    Performs authorization with twitter
 ```

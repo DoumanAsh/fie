@@ -67,6 +67,12 @@ impl Oauth {
         }
     }
 
+    ///Sets new value oauth token. Must be percent encoded.
+    pub fn set_oauth_token(&mut self, new_token: &str) {
+        self.oauth_token.truncate(0);
+        self.oauth_token.push_str(new_token);
+    }
+
     /// Returns Authorization header value
     ///
     /// The important thing here is signature which is

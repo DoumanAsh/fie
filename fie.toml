@@ -9,9 +9,10 @@ username = "username"
 password = "password"
 
 # Consumer Token of twitter app
+# This can be omitted to use builtin consumer token with authorization command
 [api.twitter.consumer]
-key = "key"
-secret = "secret"
+key = ""
+secret = ""
 
 # Authorization Token to access user account. Generated in developer page.
 [api.twitter.access]

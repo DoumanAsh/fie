@@ -47,8 +47,10 @@ pub struct Token {
 /// Twitter configuration
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Twitter {
+    #[serde(default)]
     ///Consumer tokens, belongs to app.
     pub consumer: Token,
+    #[serde(default)]
     ///Access tokens, granted per user.
     pub access: Token,
 }

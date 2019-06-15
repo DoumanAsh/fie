@@ -54,6 +54,9 @@ pub enum Command {
     #[structopt(name = "batch")]
     ///Load CLI arguments from file and runs it.
     Batch(Batch),
+    #[structopt(name = "auth")]
+    ///Allows to perform authorization with social media.
+    Auth(Auth),
 }
 
 #[derive(Debug, StructOpt)]
@@ -97,4 +100,11 @@ pub enum Env {
     #[structopt(name = "config")]
     ///Prints path to config file.
     Config,
+}
+
+#[derive(Debug, StructOpt)]
+pub enum Auth {
+    #[structopt(name = "twitter")]
+    ///Performs authorization with twitter
+    Twitter,
 }
