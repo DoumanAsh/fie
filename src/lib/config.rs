@@ -58,12 +58,11 @@ pub struct Twitter {
 /// Gab configuration.
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Gab {
-    ///Username for authorization
+    ///API's access token.
+    ///
+    ///Available through creating app on developer page
     #[serde(default)]
-    pub username: String,
-    ///Password for authorization
-    #[serde(default)]
-    pub password: String,
+    pub access_token: String,
 }
 
 /// Mastodon configuration.

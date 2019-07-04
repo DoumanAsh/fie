@@ -5,8 +5,6 @@ use std::fmt;
 #[derive(Debug)]
 ///Gab errors
 pub enum GabError {
-    ///Authorization failed.
-    LoginFailed,
     ///Failed to send request to upload image.
     ImageUploadSendError,
     ///Server rejected image upload.
@@ -35,7 +33,6 @@ impl fmt::Display for GabError {
 impl Error for GabError {
     fn description(&self) -> &str {
         match self {
-            &GabError::LoginFailed => "Login has failed",
             &GabError::ImageUploadSendError => "Failed to send request to upload image",
             &GabError::ImageUploadServerReject => "Server rejected upload of image",
             &GabError::ImageUploadInvalidResponse => "Server sent invalid response. Doesn't contain field id",

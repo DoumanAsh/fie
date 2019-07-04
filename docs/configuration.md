@@ -12,12 +12,11 @@ If both are missing then error happens
 
 ## Gab
 
-Just provide your password and login
+Access token can be granted by creating own application via `Preferences->Developement->New Application`
 
 ```toml
 [api.gab]
-username = "username"
-password = "password"
+access_token = ""
 ```
 
 ## Minds

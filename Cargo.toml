@@ -1,6 +1,6 @@
 [package]
 name = "fie"
-version = "0.14.1"
+version = "0.15.0"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute social media utility."
@@ -33,7 +33,7 @@ memmap = "0.7"
 
 data-encoding = "2"
 percent-encoding = "1"
-rand = "0.6"
+rand = "0.7"
 ring = "0.14"
 
 serde = "1"

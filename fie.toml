@@ -1,7 +1,8 @@
-# Login and password from Gab.com
+# Similar to Mastodon config
+# You can use own application in Developement section
+# and get access token
 [api.gab]
-username = "username"
-password = "password"
+access_token = ""
 
 # Login and password from Minds.com
 [api.minds]
