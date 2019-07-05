@@ -30,7 +30,7 @@ In addition to that following environment variables are used optionally:
 ## Supported social platforms:
 
 * Twitter. Using official API.
-* Gab (through unofficial API so may break);
+* Gab. Using official mastodon like API (Note that it is not clear if their fork will change API or not).
 * Mastodon. Using official API.
 * Minds. Using semi-official API.
 
