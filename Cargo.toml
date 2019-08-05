@@ -32,13 +32,13 @@ features = ["wrap_help", "suggestions"]
 memmap = "0.7"
 
 data-encoding = "2"
-percent-encoding = "1"
+percent-encoding = "2.1"
 rand = "0.7"
 ring = "0.14"
 
 serde = "1"
 serde_derive = "1"
-mime_guess = "2.0.0-alpha.6"
+mime_guess = "2"
 
 toml = { version = "0.5", optional = true }
 dirs = { version = "2", optional = true }

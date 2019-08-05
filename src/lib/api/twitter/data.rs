@@ -3,24 +3,14 @@ use super::super::http::Method;
 use crate::config;
 
 use serde_derive::{Serialize, Deserialize};
-use percent_encoding::{utf8_percent_encode, EncodeSet};
+use percent_encoding::{utf8_percent_encode, AsciiSet};
 use std::collections::HashMap;
-
-#[derive(Copy, Clone)]
-struct TwitterEncodeSet;
-
-impl EncodeSet for TwitterEncodeSet {
-    fn contains(&self, byte: u8) -> bool {
-        match byte {
-            b'a'...b'z' | b'A'...b'Z' | b'0'...b'9' | b'-' | b'.' | b'_' | b'~' => false,
-            _ => true,
-        }
-    }
-}
 
 /// Encodes the given string slice for transmission to Twitter.
 fn percent_encode(src: &str) -> impl Iterator<Item = &str> {
-    utf8_percent_encode(src, TwitterEncodeSet)
+    //https://developer.twitter.com/en/docs/basics/authentication/guides/percent-encoding-parameters.html
+    const ENCODE_SET: AsciiSet = percent_encoding::NON_ALPHANUMERIC.remove(b'-').remove(b'.').remove(b'_').remove(b'~');
+    utf8_percent_encode(src, &ENCODE_SET)
 }
 
 ///Twitter Oauth

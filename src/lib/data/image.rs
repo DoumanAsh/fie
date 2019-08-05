@@ -1,7 +1,7 @@
 //!Image utilities
 
 use memmap::{Mmap, MmapOptions};
-use mime_guess::{guess_mime_type, Mime};
+use mime_guess::{Mime};
 
 use std::fs::File;
 use std::io;
@@ -28,7 +28,7 @@ impl Image {
         let mmap = unsafe { MmapOptions::new().map(&_file)? };
 
         let name = path.as_ref().file_name().unwrap().to_string_lossy().to_string();
-        let mime = guess_mime_type(path);
+        let mime = mime_guess::from_path(path).first_or_octet_stream();
 
         Ok(Image { name, mime, _file, mmap })
     }
