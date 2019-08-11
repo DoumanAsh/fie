@@ -1,4 +1,5 @@
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::style))]
+#![feature(async_await)]
 
 use serde_derive::Deserialize;
 
@@ -12,12 +13,12 @@ use config::FileSystemLoad;
 use std::io;
 use std::path::Path;
 
-fn create_api(config: Config) -> io::Result<fie::API> {
+async fn create_api(config: Config) -> io::Result<fie::API> {
     let mut any_enabled = false;
     let mut api = fie::API::new(config.settings);
 
     if config.platforms.gab {
-        if let Err(error) = api.configure(config.api.gab) {
+        if let Err(error) = api.configure_gab(config.api.gab) {
             eprintln!("{}", error);
         } else {
             any_enabled = true
@@ -25,7 +26,7 @@ fn create_api(config: Config) -> io::Result<fie::API> {
     }
 
     if config.platforms.twitter {
-        if let Err(error) = api.configure(config.api.twitter) {
+        if let Err(error) = api.configure_twitter(config.api.twitter) {
             eprintln!("{}", error);
         } else {
             any_enabled = true
@@ -33,7 +34,7 @@ fn create_api(config: Config) -> io::Result<fie::API> {
     }
 
     if config.platforms.mastodon {
-        if let Err(error) = api.configure(config.api.mastodon) {
+        if let Err(error) = api.configure_mastodon(config.api.mastodon) {
             eprintln!("{}", error);
         } else {
             any_enabled = true
@@ -41,7 +42,7 @@ fn create_api(config: Config) -> io::Result<fie::API> {
     }
 
     if config.platforms.minds {
-        if let Err(error) = api.configure(config.api.minds) {
+        if let Err(error) = yukikaze::matsu!(api.configure_minds(config.api.minds)) {
             eprintln!("{}", error);
         } else {
             any_enabled = true
@@ -96,6 +97,10 @@ fn use_twitter_builtin_consumer(twitter: &mut fie::config::Twitter) {
     }
 }
 
+fn runtime() -> tokio::runtime::current_thread::Runtime {
+    tokio::runtime::current_thread::Runtime::new().expect("To create tokio runtime")
+}
+
 fn run() -> io::Result<()> {
     let mut config = Config::load()?;
     use_twitter_builtin_consumer(&mut config.api.twitter);
@@ -104,15 +109,18 @@ fn run() -> io::Result<()> {
 
     match args.cmd {
         cli::Command::Post(post) => {
-            let result = create_api(config)?.send(post.into()).map_err(|error| io::Error::new(io::ErrorKind::Other, error))?;
+            let mut runtime = runtime();
+            let api = runtime.block_on(create_api(config))?;
+            let result = runtime.block_on(api.send(post.into())).map_err(|error| io::Error::new(io::ErrorKind::Other, error))?;
             handle_post_result(result);
         },
         cli::Command::Batch(batch) => {
-            let api = create_api(config)?;
+            let mut runtime = runtime();
+            let api = runtime.block_on(create_api(config))?;
 
             for (idx, post) in open_batch(&batch.file)?.post.drain(..).enumerate() {
                 println!(">>>Post #{}:", idx + 1);
-                match api.send(post) {
+                match runtime.block_on(api.send(post)) {
                     Ok(result) => handle_post_result(result),
                     Err(error) => eprintln!("{}", error),
                 }
@@ -123,7 +131,7 @@ fn run() -> io::Result<()> {
         },
         cli::Command::Auth(typ) => match typ {
             cli::Auth::Twitter => {
-                auth::twitter(config.api.twitter);
+                runtime().block_on(auth::twitter(config.api.twitter));
             }
         }
     }

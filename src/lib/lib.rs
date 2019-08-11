@@ -2,6 +2,8 @@
 
 #![warn(missing_docs)]
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::style))]
+#![feature(async_await)]
+#![feature(async_closure)]
 
 pub mod data;
 pub mod config;

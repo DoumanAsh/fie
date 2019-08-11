@@ -10,12 +10,12 @@ use twitter::{Twitter, TwitterError};
 use gab::{Gab, GabError};
 use mastodon::{Mastodon, MastodonError};
 use minds::{Minds, MindsError};
-use http::{future, Future, AutoRuntime, HttpRuntime};
+use http::{matsu};
 use crate::data::{join_hash_tags, PostId, Post};
 
 use super::config;
 
-use std::fmt;
+use core::fmt;
 use std::error::Error;
 use std::io;
 
@@ -73,6 +73,14 @@ impl From<MindsError> for ApiError {
 }
 
 type PostResultInner = (Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>, Option<Result<PostId, ApiError>>);
+
+async fn post_result<T, E: Into<ApiError>, F: core::future::Future<Output=Result<T, E>>>(post: Option<F>) -> Option<Result<T, ApiError>> {
+    match post {
+        Some(post) => Some(matsu!(post).map_err(|err| err.into())),
+        None => None,
+    }
+}
+
 ///Result of Post.
 pub struct PostResult {
     inner: PostResultInner,
@@ -113,40 +121,62 @@ pub struct API {
     gab: Option<Gab>,
     mastodon: Option<Mastodon>,
     minds: Option<Minds>,
-    _http: HttpRuntime,
 }
 
 impl API {
     ///Creates new API access module by reading configuration data.
     pub fn new(settings: config::Settings) -> Self {
+        http::set_timeout(&settings);
         Self {
             twitter: None,
             mastodon: None,
             gab: None,
             minds: None,
-            _http: http::init(&settings)
         }
     }
 
-    ///Configures specified API by providing it configuration
-    ///
-    ///Does nothing if already enabled
-    pub fn configure<T: ApiEnabler>(&mut self, config: T) -> Result<(), ApiError> {
-        T::configure(self, config)
+    ///Performs initial configuration of Twitter API.
+    pub fn configure_twitter(&mut self, config: config::Twitter) -> Result<(), ApiError> {
+        if self.twitter.is_some() {
+            return Ok(());
+        }
+
+        self.twitter = Some(Twitter::new(config)?);
+        Ok(())
     }
 
-    ///Enables specified API by providing it back
-    pub fn enable<T: ApiEnabler>(&mut self, api: Option<T::ApiType>) {
-        T::enable(self, api)
+    ///Performs initial configuration of Gab API.
+    pub fn configure_gab(&mut self, config: config::Gab) -> Result<(), ApiError> {
+        if self.gab.is_some() {
+            return Ok(());
+        }
+
+        self.gab = Some(Gab::new(config)?);
+        Ok(())
     }
 
-    ///Disables specified API by taking it
-    pub fn disable<T: ApiEnabler>(&mut self) -> Option<T::ApiType> {
-        T::disable(self)
+    ///Performs initial configuration of Gab API.
+    pub fn configure_mastodon(&mut self, config: config::Mastodon) -> Result<(), ApiError> {
+        if self.mastodon.is_some() {
+            return Ok(());
+        }
+
+        self.mastodon = Some(Mastodon::new(config)?);
+        Ok(())
+    }
+
+    ///Performs initial configuration of Minds API.
+    pub async fn configure_minds(&mut self, config: config::Minds) -> Result<(), ApiError> {
+        if self.minds.is_some() {
+            return Ok(());
+        }
+
+        self.minds = Some(matsu!(Minds::new(config))?);
+        Ok(())
     }
 
     ///Sends Post to enabled APIs (blocking)
-    pub fn send(&self, post: Post) -> Result<PostResult, ApiError> {
+    pub async fn send(&self, post: Post) -> Result<PostResult, ApiError> {
         let Post { message, tags, flags, mut images } = post;
 
         let message = if tags.len() > 0 {
@@ -161,54 +191,13 @@ impl API {
         let message = message.as_str();
         let flags = &flags;
 
-        let inner: Result<PostResultInner, ()> = match images.len() {
+        let inner = match images.len() {
             0 => {
-                //Twitter
-                let twitter = match self.twitter {
-                    Some(ref twitter) => {
-                        let post = twitter.post(&message, &[], &flags).map_err(|error| ApiError::Twitter(error))
-                                          .map(|res| Some(Ok(res)))
-                                          .or_else(|err| Ok(Some(Err(err))));
-
-                        future::Either::A(post)
-                    },
-                    None => future::Either::B(future::ok(None))
-                };
-
-                twitter.join4(
-                    //Gab
-                    if let Some(ref gab) = self.gab {
-                        let post = gab.post(&message, &[], &flags).map_err(|error| ApiError::Gab(error))
-                                      .map(|res| Some(Ok(res)))
-                                      .or_else(|err| Ok(Some(Err(err))));
-
-                        future::Either::A(post)
-
-                    } else {
-                        future::Either::B(future::ok(None))
-                    },
-                    //Mastodon
-                    if let Some(ref mastodon) = self.mastodon {
-                        let post = mastodon.post(&message, &[], &flags).map_err(|error| ApiError::Mastodon(error))
-                                           .map(|res| Some(Ok(res)))
-                                           .or_else(|err| Ok(Some(Err(err))));
-
-                        future::Either::A(post)
-                    } else {
-                        future::Either::B(future::ok(None))
-                    },
-                    //Minds
-                    if let Some(ref minds) = self.minds {
-                        let post = minds.post(&message, None, &flags).map_err(|error| ApiError::Minds(error))
-                                        .map(|res| Some(Ok(res)))
-                                        .or_else(|err| Ok(Some(Err(err))));
-
-                        future::Either::A(post)
-
-                    } else {
-                        future::Either::B(future::ok(None))
-                    },
-                ).finish()
+                let twitter = post_result(self.twitter.as_ref().map(|twitter| twitter.post(&message, &[], &flags)));
+                let gab = post_result(self.gab.as_ref().map(|gab| gab.post(&message, &[], &flags)));
+                let mastodon = post_result(self.mastodon.as_ref().map(|mastodon| mastodon.post(&message, &[], &flags)));
+                let minds = post_result(self.minds.as_ref().map(|minds| minds.post(&message, None, &flags)));
+                futures_util::join!(twitter, gab, mastodon, minds)
             },
             _ => {
                 let images = {
@@ -224,174 +213,51 @@ impl API {
                     result
                 };
 
-                let twitter = match self.twitter {
-                    Some(ref twitter) => {
-                        let mut uploads = vec![];
-                        for image in images.iter() {
-                            let upload = twitter.upload_image(&image.name, &image.mime, &image.mmap[..]);
-                            uploads.push(upload);
-                        }
+                let images = &images[..];
 
-                        let uploads = future::join_all(uploads).map_err(|error| ApiError::Twitter(error))
-                                                               .and_then(move |uploads| twitter.post(&message, &uploads, &flags).from_err())
-                                                               .map(|res| Some(Ok(res)))
-                                                               .or_else(|err| Ok(Some(Err(err))));
-                        future::Either::A(uploads)
-                    },
-                    None => future::Either::B(future::ok(None))
-                };
+                let twitter = post_result(self.twitter.as_ref().map(async move |twitter| {
+                    let mut uploads = vec![];
+                    for image in images.iter() {
+                        let upload = matsu!(twitter.upload_image(&image.name, &image.mime, &image.mmap[..]))?;
+                        uploads.push(upload);
+                    }
 
-                //Twitter
-                twitter.join4(
-                    //Gab
-                    if let Some(ref gab) = self.gab {
-                        let mut uploads = vec![];
-                        for image in images.iter() {
-                            let upload = gab.upload_image(&image.name, &image.mime, &image.mmap[..]);
-                            uploads.push(upload);
-                        }
+                    matsu!(twitter.post(&message, &uploads, &flags))
+                }));
 
-                        let uploads = future::join_all(uploads).map_err(|error| ApiError::Gab(error))
-                                                               .and_then(move |uploads| gab.post(&message, &uploads, &flags).from_err())
-                                                               .map(|res| Some(Ok(res)))
-                                                               .or_else(|err| Ok(Some(Err(err))));
-                        future::Either::A(uploads)
-                    } else {
-                        future::Either::B(future::ok(None))
-                    },
-                    //Mastodon
-                    if let Some(ref mastodon) = self.mastodon {
-                        let mut uploads = vec![];
-                        for image in images.iter() {
-                            let upload = mastodon.upload_image(&image.name, &image.mime, &image.mmap[..]);
-                            uploads.push(upload);
-                        }
+                let gab = post_result(self.gab.as_ref().map(async move |gab| {
+                    let mut uploads = vec![];
+                    for image in images.iter() {
+                        let upload = matsu!(gab.upload_image(&image.name, &image.mime, &image.mmap[..]))?;
+                        uploads.push(upload);
+                    }
 
-                        let uploads = future::join_all(uploads).map_err(|error| ApiError::Mastodon(error))
-                                                               .and_then(move |uploads| mastodon.post(&message, &uploads, &flags).from_err())
-                                                               .map(|res| Some(Ok(res)))
-                                                               .or_else(|err| Ok(Some(Err(err))));
-                        future::Either::A(uploads)
-                    } else {
-                        future::Either::B(future::ok(None))
-                    },
-                    //Minds
-                    if let Some(ref minds) = self.minds {
-                        let image = unsafe { images.get_unchecked(0) };
-                        let image_upload = minds.upload_image(&image.name, &image.mime, &image.mmap[..]);
-                        let uploads = image_upload.map_err(|error| ApiError::Minds(error))
-                                                  .and_then(move |image| minds.post(&message, Some(image), &flags).from_err())
-                                                  .map(|res| Some(Ok(res)))
-                                                  .or_else(|err| Ok(Some(Err(err))));
-                        future::Either::A(uploads)
-                    } else {
-                        future::Either::B(future::ok(None))
-                    },
-                ).finish()
-            },
+                    matsu!(gab.post(&message, &uploads, &flags))
+                }));
+
+                let mastodon = post_result(self.mastodon.as_ref().map(async move |mastodon| {
+                    let mut uploads = vec![];
+                    for image in images.iter() {
+                        let upload = matsu!(mastodon.upload_image(&image.name, &image.mime, &image.mmap[..]))?;
+                        uploads.push(upload);
+                    }
+
+                    matsu!(mastodon.post(&message, &uploads, &flags))
+                }));
+
+                let minds = post_result(self.minds.as_ref().map(async move |minds| {
+                    let image = unsafe { images.get_unchecked(0) };
+                    let upload = matsu!(minds.upload_image(&image.name, &image.mime, &image.mmap[..]))?;
+
+                    matsu!(minds.post(&message, Some(upload), &flags))
+                }));
+
+                futures_util::join!(twitter, gab, mastodon, minds)
+            }
         };
 
         Ok(PostResult {
-            inner: inner.expect("Successful post")
+            inner,
         })
-    }
-}
-
-///Describes how to enable API
-pub trait ApiEnabler {
-    ///API's type
-    type ApiType;
-
-    ///Enables API
-    fn configure(api: &mut API, config: Self) -> Result<(), ApiError>;
-
-    ///Disables API
-    fn enable(api: &mut API, new: Option<Self::ApiType>);
-
-    ///Disables API
-    fn disable(api: &mut API) -> Option<Self::ApiType>;
-}
-
-impl ApiEnabler for crate::config::Mastodon {
-    type ApiType = Mastodon;
-
-    fn configure(api: &mut API, config: Self) -> Result<(), ApiError> {
-        if api.mastodon.is_some() {
-            return Ok(());
-        }
-
-        api.mastodon = Some(Mastodon::new(config)?);
-        Ok(())
-    }
-
-    fn enable(api: &mut API, new: Option<Self::ApiType>) {
-        api.mastodon = new;
-    }
-
-    fn disable(api: &mut API) -> Option<Self::ApiType> {
-        api.mastodon.take()
-    }
-}
-
-impl ApiEnabler for crate::config::Gab {
-    type ApiType = Gab;
-
-    fn configure(api: &mut API, config: Self) -> Result<(), ApiError> {
-        if api.gab.is_some() {
-            return Ok(());
-        }
-
-        api.gab = Some(Gab::new(config)?);
-        Ok(())
-    }
-
-    fn enable(api: &mut API, new: Option<Self::ApiType>) {
-        api.gab = new;
-    }
-
-    fn disable(api: &mut API) -> Option<Self::ApiType> {
-        api.gab.take()
-    }
-}
-
-impl ApiEnabler for crate::config::Twitter {
-    type ApiType = Twitter;
-
-    fn configure(api: &mut API, config: Self) -> Result<(), ApiError> {
-        if api.twitter.is_some() {
-            return Ok(());
-        }
-
-        api.twitter = Some(Twitter::new(config)?);
-        Ok(())
-    }
-
-    fn enable(api: &mut API, new: Option<Self::ApiType>) {
-        api.twitter = new;
-    }
-
-    fn disable(api: &mut API) -> Option<Self::ApiType> {
-        api.twitter.take()
-    }
-}
-
-impl ApiEnabler for crate::config::Minds {
-    type ApiType = Minds;
-
-    fn configure(api: &mut API, config: Self) -> Result<(), ApiError> {
-        if api.minds.is_some() {
-            return Ok(());
-        }
-
-        api.minds = Some(Minds::new(config)?);
-        Ok(())
-    }
-
-    fn enable(api: &mut API, new: Option<Self::ApiType>) {
-        api.minds = new;
-    }
-
-    fn disable(api: &mut API) -> Option<Self::ApiType> {
-        api.minds.take()
     }
 }

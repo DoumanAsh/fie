@@ -1,12 +1,12 @@
 use fie::config;
 use fie::api;
-use fie::api::http::{self, AutoClient, AutoRuntime, Request};
+use fie::api::http::{self, GlobalRequest, Request, matsu};
 use serde_derive::{Deserialize};
 
 use std::io::{self, Write};
 use std::collections::HashMap;
 
-pub fn twitter(mut config: config::Twitter) {
+pub async fn twitter(mut config: config::Twitter) {
     const REQUEST_TOKEN_URI: &str = "https://api.twitter.com/oauth/request_token";
     const ACCESS_TOKEN_URI: &str = "https://api.twitter.com/oauth/access_token";
 
@@ -21,7 +21,7 @@ pub fn twitter(mut config: config::Twitter) {
 
     let mut oauth = api::twitter::data::Oauth::new(config);
 
-    let _http = http::init(&Default::default());
+    http::set_timeout(&Default::default());
 
     let (auth_params, auth_header) = {
         let mut auth_params = HashMap::new();
@@ -34,12 +34,20 @@ pub fn twitter(mut config: config::Twitter) {
                                               .set_header(http::header::AUTHORIZATION, auth_header)
                                               .form(&auth_params)
                                               .expect("To serialize form params")
-                                              .send()
-                                              .finish();
+                                              .global()
+                                              .send();
+
+    let req = match matsu!(req) {
+        Ok(req) => req,
+        Err(_) => {
+            eprintln!("Request timed out");
+            return;
+        }
+    };
 
     let request_token: RequestTokenRsp = match req {
-        Ok(response) => match response.is_success() {
-            true => match response.text().finish() {
+        Ok(mut response) => match response.is_success() {
+            true => match matsu!(response.text()) {
                 Ok(response) => match yukikaze::serde_urlencoded::from_str(&response) {
                     Ok(response) => response,
                     Err(error) => {
@@ -106,12 +114,20 @@ pub fn twitter(mut config: config::Twitter) {
                                              .set_header(http::header::AUTHORIZATION, auth_header)
                                              .form(&auth_params)
                                              .expect("To serialize form params")
-                                             .send()
-                                             .finish();
+                                             .global()
+                                             .send();
+
+    let req = match matsu!(req) {
+        Ok(req) => req,
+        Err(_) => {
+            eprintln!("Request timed out");
+            return;
+        }
+    };
 
     let access_token: RequestTokenRsp = match req {
-        Ok(response) => match response.is_success() {
-            true => match response.text().finish() {
+        Ok(mut response) => match response.is_success() {
+            true => match matsu!(response.text()) {
                 Ok(response) => match yukikaze::serde_urlencoded::from_str(&response) {
                     Ok(response) => response,
                     Err(error) => {

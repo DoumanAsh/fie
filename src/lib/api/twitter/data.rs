@@ -128,9 +128,9 @@ impl Oauth {
     /// Return base64 encoded string.
     fn signature(&self, method: &Method, uri: &str, params: Option<String>) -> String {
         use data_encoding::BASE64;
-        use ring::{digest, hmac};
+        use ring::{hmac};
 
-        let key = hmac::SigningKey::new(&digest::SHA1, self.signature_key.as_bytes());
+        let key = hmac::Key::new(hmac::HMAC_SHA1_FOR_LEGACY_USE_ONLY, self.signature_key.as_bytes());
         let signature = {
             let mut result = String::new();
             for ch in percent_encode(method.as_str()) {

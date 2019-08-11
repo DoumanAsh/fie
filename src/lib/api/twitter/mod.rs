@@ -6,7 +6,7 @@ mod error;
 use std::collections::HashMap;
 
 use crate::config;
-use super::http::{self, AutoClient, Future, IntoFuture, Mime, Request};
+use super::http::{self, GlobalRequest, Mime, Request, matsu};
 
 use crate::data::PostFlags;
 pub use error::TwitterError;
@@ -32,8 +32,8 @@ impl Twitter {
 
     ///Prepares image upload request.
     ///
-    ///Future result contains `id` from `MediaResponse`
-    pub fn upload_image(&self, _name: &str, _mime: &Mime, data: &[u8]) -> impl Future<Item = u64, Error = TwitterError> {
+    ///Result contains `id` from `MediaResponse`
+    pub async fn upload_image(&self, _name: &str, _mime: &Mime, data: &[u8]) -> Result<u64, TwitterError> {
         let media = data::Media::from_bytes(data);
 
         let auth_header = {
@@ -42,26 +42,34 @@ impl Twitter {
             self.oauth.gen_auth(&http::Method::POST, IMAGES_URL, auth_params)
         };
 
-        let req = Request::post(IMAGES_URL)
-            .expect("To create request")
-            .set_header(http::header::AUTHORIZATION, auth_header)
-            .form(&media)
-            .expect("To finalize request")
-            .send();
+        let req = Request::post(IMAGES_URL).expect("To create request")
+                                           .set_header(http::header::AUTHORIZATION, auth_header)
+                                           .form(&media)
+                                           .expect("To finalize request")
+                                           .global()
+                                           .send();
 
-        // For image we wait twice of time
-        // just to be sure
-        req.or_else(|resp| resp.retry(http::get_timeout()).into_future().flatten())
-            .map_err(|_| TwitterError::ImageUploadSendError)
-            .and_then(|resp| match resp.is_success() {
-                true => Ok(resp),
-                false => Err(TwitterError::ImageUploadServerReject),
-            }).and_then(|rsp| rsp.json().map_err(|_| TwitterError::PostUploadInvalidResponse))
-            .map(|response: data::MediaResponse| response.media_id)
+        let mut resp = match matsu!(req) {
+            Ok(resp) => resp,
+            Err(err) => match matsu!(matsu!(err)) {
+                Ok(resp) => resp,
+                Err(_) => return Err(TwitterError::ImageUploadSendError)
+            }
+        }.map_err(|_| TwitterError::ImageUploadSendError)?;
+
+
+        if !resp.is_success() {
+            return Err(TwitterError::ImageUploadServerReject)
+        }
+
+        match matsu!(resp.json::<data::MediaResponse>()) {
+            Ok(data) => Ok(data.media_id),
+            Err(_) => Err(TwitterError::PostUploadInvalidResponse),
+        }
     }
 
     ///Prepares post upload request.
-    pub fn post(&self, message: &str, media_attachments: &[u64], flags: &PostFlags) -> impl Future<Item = crate::data::PostId, Error = TwitterError> {
+    pub async fn post(&self, message: &str, media_attachments: &[u64], flags: &PostFlags) -> Result<crate::data::PostId, TwitterError> {
         let tweet = data::Tweet::new(message).nsfw(flags.nsfw).media_ids(media_attachments);
 
         let auth_header = {
@@ -77,18 +85,29 @@ impl Twitter {
             self.oauth.gen_auth(&http::Method::POST, POST_URL, auth_params)
         };
 
-        let req = Request::post(POST_URL)
-            .expect("To create request")
-            .set_header(http::header::AUTHORIZATION, auth_header)
-            .form(&tweet)
-            .expect("To create tweet data")
-            .send();
+        let req = Request::post(POST_URL).expect("To create request")
+                                         .set_header(http::header::AUTHORIZATION, auth_header)
+                                         .form(&tweet)
+                                         .expect("To create tweet data")
+                                         .global()
+                                         .send();
 
-        req.map_err(|_| TwitterError::PostUploadSendError)
-            .and_then(|resp| match resp.is_success() {
-                true => Ok(resp),
-                false => Err(TwitterError::PostUploadServerReject),
-            }).and_then(|rsp| rsp.json().map_err(|_| TwitterError::PostUploadInvalidResponse))
-            .map(|response: data::TweetResponse| response.id.into())
+        let mut resp = match matsu!(req) {
+            Ok(resp) => resp,
+            Err(err) => match matsu!(matsu!(err)) {
+                Ok(resp) => resp,
+                Err(_) => return Err(TwitterError::PostUploadSendError)
+            }
+        }.map_err(|_| TwitterError::PostUploadSendError)?;
+
+
+        if !resp.is_success() {
+            return Err(TwitterError::PostUploadServerReject)
+        }
+
+        match matsu!(resp.json::<data::TweetResponse>()) {
+            Ok(data) => Ok(data.id.into()),
+            Err(_) => Err(TwitterError::PostUploadInvalidResponse),
+        }
     }
 }
