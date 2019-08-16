@@ -145,6 +145,16 @@ impl API {
         Ok(())
     }
 
+    ///Enables twitter back, if it was enabled
+    pub fn enable_twitter(&mut self, twitter: Option<Twitter>) {
+        self.twitter = twitter;
+    }
+
+    ///Disables twitter.
+    pub fn disable_twitter(&mut self) -> Option<Twitter> {
+        self.twitter.take()
+    }
+
     ///Performs initial configuration of Gab API.
     pub fn configure_gab(&mut self, config: config::Gab) -> Result<(), ApiError> {
         if self.gab.is_some() {
@@ -153,6 +163,16 @@ impl API {
 
         self.gab = Some(Gab::new(config)?);
         Ok(())
+    }
+
+    ///Enables Gab back, if it was enabled
+    pub fn enable_gab(&mut self, gab: Option<Gab>) {
+        self.gab = gab;
+    }
+
+    ///Disables Gab.
+    pub fn disable_gab(&mut self) -> Option<Gab> {
+        self.gab.take()
     }
 
     ///Performs initial configuration of Gab API.
@@ -165,6 +185,16 @@ impl API {
         Ok(())
     }
 
+    ///Enables Mastodon back, if it was enabled
+    pub fn enable_mastodon(&mut self, mastodon: Option<Mastodon>) {
+        self.mastodon = mastodon;
+    }
+
+    ///Disables Mastodon.
+    pub fn disable_mastodon(&mut self) -> Option<Mastodon> {
+        self.mastodon.take()
+    }
+
     ///Performs initial configuration of Minds API.
     pub async fn configure_minds(&mut self, config: config::Minds) -> Result<(), ApiError> {
         if self.minds.is_some() {
@@ -173,6 +203,16 @@ impl API {
 
         self.minds = Some(matsu!(Minds::new(config))?);
         Ok(())
+    }
+
+    ///Enables Minds back, if it was enabled
+    pub fn enable_minds(&mut self, minds: Option<Minds>) {
+        self.minds = minds;
+    }
+
+    ///Disables Minds.
+    pub fn disable_minds(&mut self) -> Option<Minds> {
+        self.minds.take()
     }
 
     ///Sends Post to enabled APIs (blocking)
