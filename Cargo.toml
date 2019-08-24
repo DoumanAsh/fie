@@ -29,6 +29,7 @@ features = ["wrap_help", "suggestions"]
 version = "0.2.0-alpha"
 default-features = false
 features = ["rt-full"]
+optional = true
 
 [dependencies]
 memmap = "0.7"
@@ -45,10 +46,10 @@ mime_guess = "2"
 toml = { version = "0.5", optional = true }
 dirs = { version = "2", optional = true }
 
-futures-util-preview = { version = "0.3.0-alpha", features = ["nightly", "async-await"] }
+futures-util-preview = { version = "0.3.0-alpha", features = ["nightly", "async-await", "join-macro"] }
 
 [features]
-cli = ["structopt", "toml", "dirs"]
+cli = ["structopt", "toml", "dirs", "tokio"]
 
 [[bin]]
 name = "fie"

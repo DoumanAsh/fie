@@ -1,5 +1,4 @@
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::style))]
-#![feature(async_await)]
 
 use serde_derive::Deserialize;
 
@@ -97,8 +96,34 @@ fn use_twitter_builtin_consumer(twitter: &mut fie::config::Twitter) {
     }
 }
 
+#[inline(always)]
 fn runtime() -> tokio::runtime::current_thread::Runtime {
-    tokio::runtime::current_thread::Runtime::new().expect("To create tokio runtime")
+    tokio::runtime::current_thread::Runtime::new().unwrap()
+}
+
+fn command_post(config: Config, post: cli::Post) -> io::Result<()> {
+    let mut runtime = runtime();
+
+    let api = runtime.block_on(create_api(config))?;
+    let result = runtime.block_on(api.send(post.into())).map_err(|error| io::Error::new(io::ErrorKind::Other, error))?;
+    handle_post_result(result);
+    Ok(())
+}
+
+fn command_batch(config: Config, batch: cli::Batch) -> io::Result<()> {
+    let mut runtime = runtime();
+
+    let api = runtime.block_on(create_api(config))?;
+
+    for (idx, post) in open_batch(&batch.file)?.post.drain(..).enumerate() {
+        println!(">>>Post #{}:", idx + 1);
+        match runtime.block_on(api.send(post)) {
+            Ok(result) => handle_post_result(result),
+            Err(error) => eprintln!("{}", error),
+        }
+    }
+
+    Ok(())
 }
 
 fn run() -> io::Result<()> {
@@ -108,24 +133,8 @@ fn run() -> io::Result<()> {
     let args = cli::Args::new(&mut config.platforms);
 
     match args.cmd {
-        cli::Command::Post(post) => {
-            let mut runtime = runtime();
-            let api = runtime.block_on(create_api(config))?;
-            let result = runtime.block_on(api.send(post.into())).map_err(|error| io::Error::new(io::ErrorKind::Other, error))?;
-            handle_post_result(result);
-        },
-        cli::Command::Batch(batch) => {
-            let mut runtime = runtime();
-            let api = runtime.block_on(create_api(config))?;
-
-            for (idx, post) in open_batch(&batch.file)?.post.drain(..).enumerate() {
-                println!(">>>Post #{}:", idx + 1);
-                match runtime.block_on(api.send(post)) {
-                    Ok(result) => handle_post_result(result),
-                    Err(error) => eprintln!("{}", error),
-                }
-            }
-        },
+        cli::Command::Post(post) => command_post(config, post)?,
+        cli::Command::Batch(batch) => command_batch(config, batch)?,
         cli::Command::Env(env) => match env {
             cli::Env::Config => println!("{}", Config::path()?.display())
         },
