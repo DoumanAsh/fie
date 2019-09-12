@@ -15,9 +15,7 @@ include = [
 edition = "2018"
 
 [dependencies.yukikaze]
-git = "https://github.com/DoumanAsh/yukikaze"
-branch = "1.0"
-#path = "../yukikaze"
+version = "1.0.0-alpha"
 features = ["encoding"]
 
 [dependencies.structopt]

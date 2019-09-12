@@ -292,7 +292,8 @@ impl API {
                     matsu!(minds.post(&message, Some(upload), &flags))
                 }));
 
-                futures_util::join!(twitter, gab, mastodon, minds)
+                let res = futures_util::join!(twitter, gab, mastodon, minds);
+                res
             }
         };
 
