@@ -1,6 +1,6 @@
 [package]
 name = "fie"
-version = "0.15.0"
+version = "0.16.0"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute social media utility."
@@ -15,18 +15,18 @@ include = [
 edition = "2018"
 
 [dependencies.yukikaze]
-version = "1.0.0-alpha"
+version = "1.0.0"
 features = ["encoding"]
 
 [dependencies.structopt]
-version = "0.2"
+version = "0.3"
 optional = true
 features = ["wrap_help", "suggestions"]
 
 [dependencies.tokio]
-version = "0.2.0-alpha"
+version = "0.2"
 default-features = false
-features = ["rt-full"]
+features = ["rt-core", "macros"]
 optional = true
 
 [dependencies]
@@ -44,7 +44,7 @@ mime_guess = "2"
 toml = { version = "0.5", optional = true }
 dirs = { version = "2", optional = true }
 
-futures-util-preview = { version = "0.3.0-alpha", features = ["nightly", "async-await", "join-macro"] }
+futures-util = { version = "0.3" }
 
 [features]
 cli = ["structopt", "toml", "dirs", "tokio"]

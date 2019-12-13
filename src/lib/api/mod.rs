@@ -255,7 +255,7 @@ impl API {
 
                 let images = &images[..];
 
-                let twitter = post_result(self.twitter.as_ref().map(async move |twitter| {
+                let twitter = post_result(self.twitter.as_ref().map(|twitter| async move {
                     let mut uploads = vec![];
                     for image in images.iter() {
                         let upload = matsu!(twitter.upload_image(&image.name, &image.mime, &image.mmap[..]))?;
@@ -265,7 +265,7 @@ impl API {
                     matsu!(twitter.post(&message, &uploads, &flags))
                 }));
 
-                let gab = post_result(self.gab.as_ref().map(async move |gab| {
+                let gab = post_result(self.gab.as_ref().map(|gab| async move {
                     let mut uploads = vec![];
                     for image in images.iter() {
                         let upload = matsu!(gab.upload_image(&image.name, &image.mime, &image.mmap[..]))?;
@@ -275,7 +275,7 @@ impl API {
                     matsu!(gab.post(&message, &uploads, &flags))
                 }));
 
-                let mastodon = post_result(self.mastodon.as_ref().map(async move |mastodon| {
+                let mastodon = post_result(self.mastodon.as_ref().map(|mastodon| async move {
                     let mut uploads = vec![];
                     for image in images.iter() {
                         let upload = matsu!(mastodon.upload_image(&image.name, &image.mime, &image.mmap[..]))?;
@@ -285,7 +285,7 @@ impl API {
                     matsu!(mastodon.post(&message, &uploads, &flags))
                 }));
 
-                let minds = post_result(self.minds.as_ref().map(async move |minds| {
+                let minds = post_result(self.minds.as_ref().map(|minds| async move {
                     let image = unsafe { images.get_unchecked(0) };
                     let upload = matsu!(minds.upload_image(&image.name, &image.mime, &image.mmap[..]))?;
 

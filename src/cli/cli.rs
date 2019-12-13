@@ -5,7 +5,7 @@ use structopt::StructOpt;
 use fie::config::Platforms;
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "fie", raw(setting = "structopt::clap::AppSettings::ArgRequiredElseHelp"), raw(setting = "structopt::clap::AppSettings::VersionlessSubcommands"))]
+#[structopt(name = "fie", setting(structopt::clap::AppSettings::ArgRequiredElseHelp), setting(structopt::clap::AppSettings::VersionlessSubcommands))]
 pub struct Args {
     #[structopt(flatten)]
     pub flags: Flags,
