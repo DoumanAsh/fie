@@ -98,7 +98,7 @@ fn use_twitter_builtin_consumer(twitter: &mut fie::config::Twitter) {
 
 #[inline(always)]
 fn runtime() -> tokio::runtime::Runtime {
-    tokio::runtime::Builder::new().basic_scheduler().build().expect("To create async runtime")
+    tokio::runtime::Builder::new().basic_scheduler().enable_io().build().expect("To create async runtime")
 }
 
 fn command_post(config: Config, post: cli::Post) -> io::Result<()> {

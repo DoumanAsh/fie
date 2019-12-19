@@ -1,6 +1,6 @@
 [package]
 name = "fie"
-version = "0.16.0"
+version = "0.16.1"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute social media utility."
@@ -26,7 +26,7 @@ features = ["wrap_help", "suggestions"]
 [dependencies.tokio]
 version = "0.2"
 default-features = false
-features = ["rt-core", "macros"]
+features = ["rt-core", "io-driver", "macros"]
 optional = true
 
 [dependencies]
