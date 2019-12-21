@@ -37,7 +37,7 @@ impl Default for Platforms {
 }
 
 ///Pair of key and secret
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Token {
     ///Key
     pub key: String,
@@ -45,7 +45,7 @@ pub struct Token {
     pub secret: String,
 }
 /// Twitter configuration
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Twitter {
     #[serde(default)]
     ///Consumer tokens, belongs to app.
@@ -56,7 +56,7 @@ pub struct Twitter {
 }
 
 /// Gab configuration.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Gab {
     ///API's access token.
     ///
@@ -66,7 +66,7 @@ pub struct Gab {
 }
 
 /// Mastodon configuration.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Mastodon {
     ///Hostname to connect
     #[serde(default)]
@@ -79,7 +79,7 @@ pub struct Mastodon {
 }
 
 /// Minds configuration.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Minds {
     ///Username for authorization
     #[serde(default)]
@@ -109,7 +109,7 @@ impl Default for Settings {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 ///Social media's API information
 pub struct ApiConfig {
     ///Gab information
@@ -123,7 +123,7 @@ pub struct ApiConfig {
 }
 
 ///Fie's configuration
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Config {
     ///Enable/disable switches for social medias
     #[serde(default)]
