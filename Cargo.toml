@@ -29,6 +29,13 @@ default-features = false
 features = ["rt-core", "io-driver", "macros"]
 optional = true
 
+[dependencies.log]
+version = "0.4"
+# It is supposed to be compile time elimination, but actually it is not :(
+# Though likely these ifs will be constexpr
+features = ["release_max_level_off"]
+optional = true
+
 [dependencies]
 memmap = "0.7"
 
@@ -47,7 +54,7 @@ dirs = { version = "2", optional = true }
 futures-util = { version = "0.3" }
 
 [features]
-cli = ["structopt", "toml", "dirs", "tokio"]
+cli = ["structopt", "toml", "dirs", "tokio", "log"]
 
 [[bin]]
 name = "fie"
