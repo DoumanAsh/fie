@@ -1,0 +1,12 @@
+[build.env]
+passthrough = [
+    "FIE_TWITTER_CONSUMER_KEY",
+    "FIE_TWITTER_CONSUMER_SECRET",
+    "RUSTFLAGS",
+]
+
+[target.x86_64-unknown-linux-musl]
+image = "douman/cross-x86_64-unknown-linux-musl"
+
+[target.armv7-unknown-linux-musleabihf]
+image = "douman/cross-armv7-unknown-linux-musleabihf:latest"

@@ -1,6 +1,6 @@
 [package]
 name = "fie"
-version = "0.16.2"
+version = "0.16.3"
 authors = ["Douman <douman@gmx.se>"]
 repository = "https://github.com/DoumanAsh/fie"
 description = "Small and cute social media utility."
@@ -49,7 +49,7 @@ serde_derive = "1"
 mime_guess = "2"
 
 toml = { version = "0.5", optional = true }
-dirs = { version = "2", optional = true }
+dirs = { version = "3", optional = true }
 
 futures-util = { version = "0.3" }
 

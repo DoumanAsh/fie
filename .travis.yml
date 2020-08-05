@@ -14,14 +14,21 @@ matrix:
       rust: stable
       env: TARGET=x86_64-unknown-linux-gnu
       cache: cargo
+    - os: linux
+      rust: stable
+      env: TARGET=x86_64-unknown-linux-musl
+      cache: cargo
 
 sudo: false
 
+install:
+  - cargo install cross || true
+
 script:
-  - cargo test --features cli --target $TARGET
+  - cargo test --features cli
 
 before_deploy:
-  - cargo build --release --features cli --target $TARGET
+  - cross build --release --features cli --target $TARGET
   - zip "$PROJECT_NAME-$TRAVIS_TAG-$TARGET.zip" -j target/$TARGET/release/fie fie.toml
 
 deploy:
